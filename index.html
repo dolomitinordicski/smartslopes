@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;700;900&family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
             --dns-primary: #0D4D5E;
@@ -19,29 +19,26 @@
         }
         body { font-family: 'Roboto', sans-serif; background-color: var(--dns-bg); color: var(--dns-primary); margin: 0; scroll-behavior: smooth; overflow-x: hidden; }
         h1, h2, h3, h4, h5, h6 { font-family: 'Be Vietnam Pro', sans-serif; }
-        
+
         /* Utility Colors */
         .bg-dns-primary { background-color: var(--dns-primary); }
         .bg-dns-deep { background-color: var(--dns-deep); }
         .text-dns-soft { color: var(--dns-soft); }
         .text-dns-teal { color: var(--dns-teal); }
         .border-dns-soft { border-color: var(--dns-soft); }
-
         /* Slide Layout */
         .slide-section { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 6rem 1.5rem; position: relative; border-bottom: 1px solid rgba(13, 77, 94, 0.05); }
         @media (min-width: 1024px) { .slide-section { padding: 4rem 10rem; } }
-
         /* Icon & Graphic Refinements */
         .wf-icon { fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .glass-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        
+
         /* Architecture & Lifecycle Effects */
         .premium-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; }
         .premium-card.active { border-color: var(--dns-soft); background: var(--dns-primary); color: white; transform: translateY(-5px); box-shadow: 0 25px 50px -12px rgba(13, 77, 94, 0.25); }
         .step-node { position: relative; z-index: 10; transition: all 0.4s; }
         .step-node.active { transform: scale(1.15); filter: drop-shadow(0 0 15px var(--dns-soft)); }
         .timeline-track { height: 2px; background: linear-gradient(90deg, transparent, var(--dns-teal) 15%, var(--dns-teal) 85%, transparent); opacity: 0.2; }
-
         /* Animations */
         .radar-rotate { animation: rotate 5s linear infinite; transform-origin: center; }
         @keyframes geoMove { 0% { offset-distance: 0%; } 100% { offset-distance: 100%; } }
@@ -93,38 +90,92 @@
         @keyframes blip { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.8); opacity: 0; } 100% { transform: scale(1); opacity: 0; } }
         .gps-blip { position: absolute; width: 12px; height: 12px; border-radius: 9999px; background-color: var(--dns-soft); box-shadow: 0 0 10px 2px rgba(170, 208, 209, 0.6); }
         .gps-blip::after { content: ''; position: absolute; inset: 0; border-radius: 9999px; background-color: var(--dns-soft); animation: blip 2s infinite; }
-
         [x-cloak] { display: none !important; }
 
-        /* Typographic scale for sub-headings/paragraphs (h3-h6, p) — 5 semantic roles, one size each,
-           applied identically across all 9 slides regardless of markup/DOM position. */
-        .dns-eyebrow      { font-size: 0.6875rem; }  /* tracked micro-labels above/below content */
-        .dns-item-title   { font-size: 0.9375rem; }  /* titles inside clickable cards / list items */
-        .dns-item-desc    { font-size: 0.875rem; }   /* description text inside clickable cards / list items */
-        .dns-detail-title { font-size: 1.875rem; }   /* titles inside always-visible "master-detail" panels */
-        .dns-detail-desc  { font-size: 1.25rem; }    /* description text inside "master-detail" panels */
+        /* ============ SCALA TIPOGRAFICA UNIFICATA ============ */
+        .s-h1 { font-size: clamp(2.75rem, 6.2vw, 4.75rem); font-weight: 900; line-height: 0.9; letter-spacing: -0.035em; margin-bottom: 3rem; }
+        .s-h2 { font-size: clamp(1.9rem, 3.4vw, 3rem); font-weight: 900; line-height: 1.03; letter-spacing: -0.03em; text-transform: uppercase; margin-bottom: 1.5rem; }
+        .s-h2-solo { margin-bottom: 3.75rem; }
+        .s-lead { font-size: clamp(1.05rem, 1.35vw, 1.3rem); font-weight: 300; line-height: 1.62; max-width: 46rem; margin-bottom: 3.5rem; }
+        .s-lead-tight { margin-bottom: 2.5rem; }
+        .s-stat { font-size: clamp(1.7rem, 2.6vw, 2.35rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; }
+
+        /* ============ COMPARSA CON LO SCROLL ============ */
+        [data-rv] {
+            opacity: 0; transform: translateY(26px) scale(0.995);
+            transition: opacity .75s cubic-bezier(.16,.84,.44,1), transform .75s cubic-bezier(.16,.84,.44,1);
+            transition-delay: var(--rv-d, 0ms); will-change: opacity, transform;
+        }
+        [data-rv].rv-in { opacity: 1; transform: none; }
+        @media (prefers-reduced-motion: reduce) {
+            [data-rv], [data-rv].rv-in { opacity: 1 !important; transform: none !important; transition: none !important; }
+            html { scroll-behavior: auto !important; }
+        }
+
+        /* ============ SCORRIMENTO ============ */
+        html { scroll-snap-type: y proximity; }
+        .slide-section { scroll-snap-align: start; scroll-snap-stop: normal; }
+
+        /* barra di avanzamento */
+        .progress-rail { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 120; background: rgba(13,77,94,0.08); }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--dns-teal), var(--dns-soft)); transition: width .15s linear; }
+
+        /* pulsante autoplay */
+        .ctrl-btn { transition: all .3s; }
+        .ctrl-btn:hover { transform: scale(1.08); }
+        @keyframes ringPulse { 0% { box-shadow: 0 0 0 0 rgba(170,208,209,.55); } 70% { box-shadow: 0 0 0 12px rgba(170,208,209,0); } 100% { box-shadow: 0 0 0 0 rgba(170,208,209,0); } }
+        .ctrl-btn.playing { animation: ringPulse 2.2s infinite; }
+
+        /* alleggerimento grafico: velo sfumato sulle slide chiare */
+        .slide-section.bg-white::before,
+        .slide-section.bg-dns-bg::before {
+            content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+            background: radial-gradient(120% 80% at 88% 8%, rgba(170,208,209,0.20), transparent 60%);
+        }
+        .slide-section > * { position: relative; z-index: 1; }
+        /* Typographic scale for sub-headings/paragraphs (h3-h6, p) — 5 semantic roles, one size each. */
+        .dns-eyebrow      { font-size: 0.6875rem; }
+        .dns-item-title   { font-size: 0.9375rem; }
+        .dns-item-desc    { font-size: 0.875rem; }
+        .dns-detail-title { font-size: 1.875rem; }
+        .dns-detail-desc  { font-size: 1.25rem; }
         .slide-dot { background-color: var(--dns-primary); border: 2px solid #ffffff; box-shadow: 0 0 0 1px rgba(8, 56, 69, 0.25); }
+        /* Inspector: controller-assisted validation */
+        @keyframes inspectorSweep { 0%,100% { opacity:.25; } 50% { opacity:1; } }
+        .inspector-cone { animation: inspectorSweep 3s ease-in-out infinite; }
     </style>
 </head>
 <body x-data="dnsDeck()" x-cloak>
-
     <!-- Navigation Header -->
+    <!-- barra di avanzamento -->
+    <div class="progress-rail"><div class="progress-fill" :style="'width:' + progress + '%'"></div></div>
     <nav class="fixed top-0 w-full z-[100] flex justify-between items-center px-6 py-5 md:px-12 pointer-events-none">
         <div class="flex items-center pointer-events-auto bg-white/95 backdrop-blur-xl p-3 rounded-2xl shadow-2xl border border-dns-soft/20">
-            <img src="data:image/png;base64,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" alt="Dolomiti NordicSki" class="h-[43px] w-auto">
+            <span class="font-black tracking-[0.25em] text-dns-primary text-sm px-2">DOLOMITI NORDICSKI</span>
         </div>
+        <div class="flex items-center space-x-3 pointer-events-auto">
+            <button @click="toggleAuto()" :title="autoplay ? 'Pausa' : 'Scorrimento automatico'"
+                    class="ctrl-btn w-11 h-11 rounded-2xl bg-dns-primary text-dns-soft shadow-2xl border border-white/5 flex items-center justify-center"
+                    :class="autoplay ? 'playing' : ''">
+                <svg x-show="!autoplay" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg x-show="autoplay" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+            </button>
         <div class="flex space-x-1 bg-dns-primary p-1.5 rounded-2xl pointer-events-auto shadow-2xl border border-white/5">
             <template x-for="l in ['IT','DE','EN']">
-                <button @click="lang = l.toLowerCase()" 
+                <button @click="lang = l.toLowerCase()"
                         :class="lang === l.toLowerCase() ? 'bg-dns-soft text-dns-primary shadow-lg' : 'text-white/60 hover:text-white'"
                         class="px-5 py-2 rounded-xl text-[11px] font-black transition-all uppercase" x-text="l"></button>
             </template>
+            </div>
         </div>
     </nav>
-
-    <!-- Slide dot navigation: click to jump, active dot tracks scroll position -->
+    <!-- Slide dot navigation -->
     <div class="fixed right-6 top-1/2 -translate-y-1/2 z-[100] hidden md:flex flex-col items-center space-y-4">
-        <template x-for="n in 9">
+        <div class="mb-3 text-center">
+            <span class="block text-[13px] font-black text-dns-primary leading-none" x-text="String(activeSlide).padStart(2,'0')"></span>
+            <span class="block text-[9px] font-black text-dns-teal opacity-50 mt-1" x-text="'/ ' + String(totalSlides).padStart(2,'0')"></span>
+        </div>
+        <template x-for="n in totalSlides">
             <a :href="'#slide-' + n" @click.prevent="goToSlide(n)"
                class="slide-dot rounded-full transition-all cursor-pointer"
                :class="activeSlide === n ? 'w-3.5 h-3.5' : 'w-2 h-2'"
@@ -137,7 +188,7 @@
     <section id="slide-1" class="slide-section bg-dns-primary text-white overflow-hidden">
         <div class="max-w-5xl z-10">
             <h6 class="text-dns-soft font-black tracking-[0.6em] uppercase mb-8 dns-eyebrow opacity-80" x-text="content[lang].s1_tag"></h6>
-            <h1 class="text-5xl md:text-7xl font-black mb-12 leading-[0.85] tracking-tighter" x-html="content[lang].s1_title"></h1>
+            <h1 class="s-h1" x-html="content[lang].s1_title"></h1>
             <div class="flex items-center space-x-6 mb-10">
                 <div class="h-[3px] w-16 bg-dns-soft rounded-full"></div>
                 <span class="text-dns-soft font-black tracking-[0.4em] uppercase text-sm">Smart Slopes Concept</span>
@@ -149,14 +200,53 @@
         </div>
     </section>
 
-    <!-- Slide 2: ARCHITETTURA STRATEGICA -->
+    <!-- Slide 2: IL PROBLEMA OGGI -->
     <section id="slide-2" class="slide-section bg-white">
-        <h2 class="text-4xl md:text-5xl font-black mb-16 text-dns-primary uppercase tracking-tighter" x-text="content[lang].s2_title"></h2>
+        <h2 class="s-h2 text-dns-primary" x-text="content[lang].sQ_title"></h2>
+        <p class="s-lead text-dns-teal" x-text="content[lang].sQ_lead"></p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <template x-for="(q, i) in content[lang].sQ_points">
+                <button @click="activeProblem = i" class="p-10 rounded-[3rem] border-2 transition-all text-left"
+                        :class="activeProblem === i ? 'bg-dns-deep text-white border-dns-soft shadow-3xl' : 'bg-dns-bg border-dns-soft/20 text-dns-primary opacity-70 hover:opacity-100'">
+                    <svg class="w-11 h-11 wf-icon mb-7" :class="activeProblem === i ? 'text-dns-soft' : 'text-dns-primary'" viewBox="0 0 24 24" x-html="q.icon"></svg>
+                    <h4 class="font-black dns-item-title uppercase tracking-widest mb-4" x-text="q.t"></h4>
+                    <p class="dns-item-desc font-light leading-relaxed opacity-85" x-text="q.d" x-show="activeProblem === i"></p>
+                </button>
+            </template>
+        </div>
+        <div class="bg-dns-primary text-white p-12 rounded-[3.5rem] shadow-3xl border-l-[12px] border-dns-soft">
+            <p class="dns-detail-desc font-light leading-relaxed" x-html="content[lang].sQ_root"></p>
+        </div>
+    </section>
+
+    <!-- Slide 3: NON È UN ESPERIMENTO -->
+    <section id="slide-3" class="slide-section bg-dns-bg">
+        <h2 class="s-h2 text-dns-primary" x-text="content[lang].s6_title"></h2>
+        <p class="s-lead text-dns-teal" x-text="content[lang].s6_lead"></p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-14">
+            <template x-for="(p, i) in content[lang].s6_proofs">
+                <button @click="activeProof = i" class="p-10 rounded-[3rem] border-2 transition-all text-left shadow-xl"
+                        :class="activeProof === i ? 'bg-white border-dns-primary shadow-3xl scale-[1.03]' : 'bg-white/40 border-dns-soft/20 opacity-60 hover:opacity-100'">
+                    <svg class="w-12 h-12 text-dns-primary mb-8 wf-icon" viewBox="0 0 24 24" x-html="p.icon"></svg>
+                    <h4 class="font-black dns-item-title uppercase mb-3 tracking-widest text-dns-primary" x-text="p.t"></h4>
+                    <p class="dns-eyebrow font-black uppercase tracking-[0.25em] text-dns-teal mb-4" x-text="p.where"></p>
+                    <p class="dns-item-desc font-light leading-relaxed opacity-80" x-text="p.d" x-show="activeProof === i"></p>
+                </button>
+            </template>
+        </div>
+        <div class="bg-dns-primary text-white p-12 rounded-[3.5rem] shadow-3xl border-l-[12px] border-dns-soft">
+            <p class="dns-detail-desc font-light leading-relaxed" x-html="content[lang].s6_conclusion"></p>
+        </div>
+    </section>
+
+    <!-- Slide 4: ARCHITETTURA STRATEGICA -->
+    <section id="slide-4" class="slide-section bg-white">
+        <h2 class="s-h2 s-h2-solo text-dns-primary" x-text="content[lang].s2_title"></h2>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div class="space-y-4">
                 <template x-for="(l, i) in content[lang].s2_layers">
-                    <div @click="activeLayer = i" 
-                         class="premium-card p-6 rounded-[2rem] border-2 cursor-pointer transition-all flex items-center justify-between"
+                    <div @click="activeLayer = i"
+                         class="premium-card p-6 rounded-[2.5rem] border-2 cursor-pointer transition-all flex items-center justify-between"
                          :class="activeLayer === i ? 'active shadow-2xl' : 'bg-dns-bg border-dns-soft/10 text-dns-primary hover:border-dns-teal/30'">
                         <div class="flex items-center space-x-6">
                             <div class="p-3 rounded-2xl" :class="activeLayer === i ? 'bg-white/10' : 'bg-dns-primary/5'">
@@ -168,7 +258,7 @@
                     </div>
                 </template>
             </div>
-            <div class="bg-dns-deep text-white p-12 rounded-[4rem] shadow-2xl min-h-[450px] flex flex-col justify-center relative border-b-[12px] border-dns-soft">
+            <div class="bg-dns-deep text-white p-12 rounded-[3.5rem] shadow-2xl min-h-[450px] flex flex-col justify-center relative border-b-[12px] border-dns-soft">
                 <div class="absolute top-0 right-0 p-12 opacity-5">
                     <svg class="w-40 h-40 wf-icon text-white" viewBox="0 0 24 24" x-html="content[lang].s2_layers[activeLayer].icon"></svg>
                 </div>
@@ -176,40 +266,52 @@
                 <p class="dns-detail-desc font-light leading-relaxed opacity-80" x-text="content[lang].s2_layers[activeLayer].desc"></p>
                 <div class="mt-10 pt-10 border-t border-white/10 flex items-center space-x-4">
                     <div class="w-2 h-2 rounded-full bg-dns-soft animate-ping"></div>
-                    <span class="text-xs font-black uppercase tracking-[0.3em] text-dns-teal" x-text="activeLayer === 0 ? 'LTS Governance' : 'DNS Sovereignty'"></span>
+                    <span class="text-xs font-black uppercase tracking-[0.3em] text-dns-teal" x-text="content[lang].s2_layers[activeLayer].owner"></span>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Slide 3: CICLO DI VITA -->
-    <section id="slide-3" class="slide-section bg-dns-deep text-white">
-        <h2 class="text-4xl md:text-5xl font-black mb-24 text-dns-soft uppercase tracking-widest text-center" x-text="content[lang].s3_title"></h2>
-        <div class="max-w-7xl mx-auto w-full">
-            <div class="relative flex flex-col md:flex-row items-center justify-between gap-12 md:gap-0 px-10">
-                <div class="absolute timeline-track w-full top-12 hidden md:block"></div>
+    <!-- Slide 5: IL PASS -->
+    <section id="slide-5" class="slide-section bg-dns-bg">
+        <h2 class="s-h2 text-dns-primary" x-text="content[lang].sT_title"></h2>
+        <p class="s-lead text-dns-teal" x-text="content[lang].sT_lead"></p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <template x-for="(c, i) in content[lang].sT_carriers">
+                <button @click="activeCarrier = i" class="p-10 rounded-[3rem] border-2 transition-all text-left"
+                        :class="activeCarrier === i ? 'bg-dns-primary text-white border-dns-primary shadow-3xl scale-[1.03]' : 'bg-white border-dns-soft/20 text-dns-primary opacity-70 hover:opacity-100'">
+                    <svg class="w-12 h-12 wf-icon mb-8" :class="activeCarrier === i ? 'text-dns-soft' : 'text-dns-primary'" viewBox="0 0 24 24" x-html="c.icon"></svg>
+                    <h4 class="font-black dns-item-title uppercase tracking-widest mb-3" x-text="c.t"></h4>
+                    <p class="dns-eyebrow font-black uppercase tracking-[0.25em] mb-5" :class="activeCarrier === i ? 'text-dns-soft' : 'text-dns-teal'" x-text="c.who"></p>
+                    <p class="dns-item-desc font-light leading-relaxed opacity-85" x-text="c.d" x-show="activeCarrier === i"></p>
+                </button>
+            </template>
+        </div>
+        <div class="mt-14 mb-12">
+            <p class="dns-eyebrow font-black uppercase tracking-[0.35em] text-dns-teal mb-8" x-text="content[lang].s3_title"></p>
+            <div class="relative flex flex-col md:flex-row items-center justify-between gap-8 md:gap-0">
+                <div class="absolute timeline-track w-full top-7 hidden md:block"></div>
                 <template x-for="(step, i) in content[lang].s3_steps">
                     <div class="relative z-10 flex flex-col items-center w-full">
-                        <button @click="activeStep = i" 
-                                class="w-24 h-24 rounded-full border-4 flex items-center justify-center transition-all step-node"
-                                :class="activeStep === i ? 'bg-dns-soft border-white scale-125' : 'bg-dns-primary border-dns-teal/30 hover:border-dns-soft/50'">
-                            <svg class="w-10 h-10 wf-icon" :class="activeStep === i ? 'text-dns-primary' : 'text-dns-soft'" viewBox="0 0 24 24" x-html="step.icon"></svg>
+                        <button @click="activeStep = i"
+                                class="w-14 h-14 rounded-full border-[3px] flex items-center justify-center transition-all step-node"
+                                :class="activeStep === i ? 'bg-dns-primary border-dns-primary scale-125' : 'bg-white border-dns-soft hover:border-dns-teal'">
+                            <svg class="w-6 h-6 wf-icon" :class="activeStep === i ? 'text-dns-soft' : 'text-dns-teal'" viewBox="0 0 24 24" x-html="step.icon"></svg>
                         </button>
-                        <p class="mt-8 dns-eyebrow font-black uppercase tracking-widest text-center max-w-[100px]" :class="activeStep === i ? 'text-white' : 'text-dns-teal'" x-text="step.label"></p>
+                        <p class="mt-4 dns-eyebrow font-black uppercase tracking-widest text-center" :class="activeStep === i ? 'text-dns-primary' : 'text-dns-teal opacity-60'" x-text="step.label"></p>
                     </div>
                 </template>
             </div>
-            <div class="max-w-4xl mx-auto mt-24 p-12 bg-dns-primary/40 border border-dns-soft/10 rounded-[3.5rem] shadow-3xl text-center backdrop-blur-md">
-                <div class="inline-block px-5 py-1.5 bg-dns-soft text-dns-primary rounded-full text-[10px] font-black uppercase mb-6 shadow-lg" x-text="'Stage 0' + (activeStep + 1)"></div>
-                <h4 class="text-white font-black dns-detail-title mb-6 uppercase tracking-tighter" x-text="content[lang].s3_steps[activeStep].label"></h4>
-                <p class="dns-detail-desc text-dns-soft/90 font-light leading-relaxed max-w-2xl mx-auto" x-text="content[lang].s3_steps[activeStep].detail"></p>
-            </div>
+            <p class="mt-8 dns-item-desc font-light leading-relaxed text-dns-primary opacity-85 max-w-4xl" x-text="content[lang].s3_steps[activeStep].detail"></p>
+        </div>
+        <div class="bg-dns-primary text-white p-12 rounded-[3.5rem] shadow-3xl border-l-[12px] border-dns-soft">
+            <p class="dns-detail-desc font-light leading-relaxed" x-html="content[lang].sT_freedom"></p>
         </div>
     </section>
 
-    <!-- Slide 4: GEOFENCING -->
-    <section id="slide-4" class="slide-section bg-white">
-        <h2 class="text-4xl md:text-5xl font-black mb-16 text-dns-primary uppercase tracking-tighter" x-text="content[lang].s4_title"></h2>
+    <!-- Slide 6: GEOFENCING -->
+    <section id="slide-6" class="slide-section bg-white">
+        <h2 class="s-h2 s-h2-solo text-dns-primary" x-text="content[lang].s4_title"></h2>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             <div class="space-y-6">
                 <template x-for="(p, i) in content[lang].s4_points">
@@ -225,7 +327,7 @@
                     </button>
                 </template>
             </div>
-            <div class="h-[500px] bg-dns-bg rounded-[4rem] relative flex items-center justify-center border border-dns-soft/20 shadow-2xl overflow-hidden">
+            <div class="h-[500px] bg-dns-bg rounded-[3.5rem] relative flex items-center justify-center border border-dns-soft/20 shadow-2xl overflow-hidden">
                 <div class="geo-boundary w-80 h-80 rounded-full border-4 bg-dns-teal/5 relative flex items-center justify-center overflow-visible">
                     <svg viewBox="0 0 320 320" class="absolute inset-0 w-full h-full overflow-visible pointer-events-none">
                         <path d="M -20,60 C 80,95 120,140 160,160 C 200,180 260,215 340,255" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
@@ -233,25 +335,27 @@
                     </svg>
                     <div class="absolute inset-0 radar-rotate opacity-30"><div class="w-1/2 h-[2px] bg-gradient-to-l from-dns-soft to-transparent ml-auto"></div></div>
                     <div class="geo-tracker">
-                        <div class="geo-tracker-badge on">GPS Tracking ON</div>
-                        <div class="geo-tracker-badge off">No Signal</div>
+                        <div class="geo-tracker-badge on" x-text="content[lang].s4_badge_on"></div>
+                        <div class="geo-tracker-badge off" x-text="content[lang].s4_badge_off"></div>
                         <div class="geo-tracker-pulse"></div>
                         <div class="geo-tracker-dot"></div>
                     </div>
                 </div>
             </div>
         </div>
+        <p class="mt-10 dns-eyebrow font-black uppercase tracking-[0.3em] text-dns-teal opacity-70" x-text="content[lang].s4_note"></p>
     </section>
 
-    <!-- Slide 5: TICKET CONTROL -->
-    <section id="slide-5" class="slide-section bg-dns-primary text-white">
-        <h2 class="text-4xl md:text-5xl font-black mb-16 text-dns-soft uppercase tracking-tighter" x-text="content[lang].s5_title"></h2>
+    <!-- Slide 7: VALIDAZIONE ASSISTITA -->
+    <section id="slide-7" class="slide-section bg-dns-primary text-white">
+        <h2 class="s-h2 text-dns-soft" x-text="content[lang].s5_title"></h2>
+        <p class="s-lead text-white/60" x-text="content[lang].s5_lead"></p>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             <div class="space-y-5">
                 <template x-for="(f, i) in content[lang].s5_features">
-                    <button @click="activeControl = i" class="w-full flex items-center p-8 rounded-[2.5rem] border-l-8 transition-all text-left shadow-2xl" 
+                    <button @click="activeControl = i" class="w-full flex items-center p-8 rounded-[2.5rem] border-l-[12px] transition-all text-left shadow-2xl"
                             :class="activeControl === i ? 'bg-dns-deep border-dns-soft' : 'bg-dns-deep/30 border-transparent opacity-50 hover:opacity-100'">
-                        <svg class="w-10 h-10 text-dns-soft mr-6 wf-icon" viewBox="0 0 24 24" x-html="f.icon"></svg>
+                        <svg class="w-10 h-10 text-dns-soft mr-6 wf-icon flex-shrink-0" viewBox="0 0 24 24" x-html="f.icon"></svg>
                         <div>
                             <h5 class="font-black dns-item-title uppercase tracking-widest mb-1" x-text="f.t"></h5>
                             <p class="dns-item-desc opacity-60 leading-relaxed font-light" x-text="f.d" x-show="activeControl === i"></p>
@@ -260,61 +364,98 @@
                 </template>
             </div>
             <div class="flex justify-center">
-                <div class="w-80 h-[580px] bg-dns-deep rounded-[4.5rem] border-[14px] border-dns-bg shadow-[0_0_80px_rgba(0,0,0,0.5)] relative overflow-hidden p-8 flex flex-col">
+                <div class="w-80 h-[580px] bg-dns-deep rounded-[3.5rem] border-[14px] border-dns-bg shadow-[0_0_80px_rgba(0,0,0,0.5)] relative overflow-hidden p-8 flex flex-col">
                     <div class="flex-1 bg-black/40 rounded-[2.5rem] relative overflow-hidden border border-dns-teal/30">
-                        <div class="absolute inset-0 radar-rotate opacity-20"><div class="w-1/2 h-[1px] bg-dns-soft ml-auto"></div></div>
-                        <div class="gps-blip top-[25%] left-[35%]"></div>
-                        <div class="gps-blip top-[60%] right-[30%]"></div>
-                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 border-4 border-red-500/50 rounded-full animate-bounce flex items-center justify-center bg-red-500/10" x-show="activeControl === 1">
-                            <span class="text-red-500 text-xl font-black">!</span>
+                        <!-- wide geofence -->
+                        <div class="absolute inset-6 rounded-[2.5rem] border-2 border-dashed border-dns-teal/40"></div>
+                        <!-- narrow control point -->
+                        <div class="absolute left-1/2 -translate-x-1/2 bottom-16 w-24 h-24 rounded-full border-2 border-dns-soft/70 inspector-cone flex items-center justify-center">
+                            <svg class="w-8 h-8 text-dns-soft wf-icon" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         </div>
+                        <div class="gps-blip top-[18%] left-[28%]"></div>
+                        <div class="gps-blip top-[34%] right-[24%]"></div>
+                        <div class="gps-blip top-[52%] left-[46%]"></div>
                     </div>
-                    <div class="mt-6 bg-dns-primary text-dns-soft p-4 rounded-2xl border border-dns-teal/20 text-[10px] font-black uppercase tracking-[0.2em]">Real-time Ticket Monitor</div>
+                    <div class="mt-6 bg-dns-primary text-dns-soft p-4 rounded-2xl border border-dns-teal/20 text-[10px] font-black uppercase tracking-[0.2em] text-center" x-text="content[lang].s5_device"></div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Slide 6: CLEARING & FINANCE -->
-    <section id="slide-6" class="slide-section bg-dns-bg">
-        <h2 class="text-4xl md:text-5xl font-black mb-16 text-dns-primary uppercase tracking-tighter" x-text="content[lang].s6_title"></h2>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div class="space-y-8">
-                <button @click="activeFin = 0" class="w-full p-10 rounded-[3rem] border-l-[12px] transition-all text-left shadow-2xl" :class="activeFin === 0 ? 'bg-white border-dns-teal' : 'bg-white/40 border-gray-200 opacity-60'">
-                    <h4 class="font-black text-dns-deep uppercase dns-item-title mb-4 tracking-widest">Financial Framework</h4>
-                    <p class="dns-item-desc text-dns-teal font-light leading-relaxed" x-text="content[lang].s6_clearing" x-show="activeFin === 0"></p>
-                </button>
-                <button @click="activeFin = 1" class="w-full p-10 rounded-[3rem] border-l-[12px] transition-all text-left shadow-2xl" :class="activeFin === 1 ? 'bg-dns-primary text-white border-dns-soft' : 'bg-dns-primary/40 opacity-60 text-white'">
-                    <h4 class="font-black text-dns-soft uppercase dns-item-title mb-4 tracking-widest">Data Sovereignty</h4>
-                    <p class="dns-item-desc opacity-90 font-light leading-relaxed" x-text="content[lang].s6_privacy" x-show="activeFin === 1"></p>
-                </button>
+    <!-- Slide 8: IL PARTNER TECNOLOGICO -->
+    <section id="slide-8" class="slide-section bg-white">
+        <h2 class="s-h2 text-dns-primary" x-text="content[lang].sP_title"></h2>
+        <p class="s-lead text-dns-teal" x-text="content[lang].sP_lead"></p>
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-12 items-start">
+            <!-- profile -->
+            <div class="lg:col-span-2 bg-dns-deep text-white p-12 rounded-[3.5rem] shadow-3xl border-b-[12px] border-dns-soft">
+                <p class="dns-eyebrow font-black uppercase tracking-[0.3em] text-dns-teal mb-4" x-text="content[lang].sP_who_label"></p>
+                <h3 class="dns-detail-title font-black text-dns-soft uppercase tracking-tighter mb-3" x-text="content[lang].sP_company"></h3>
+                <p class="dns-item-desc font-light opacity-70 mb-10 leading-relaxed" x-text="content[lang].sP_company_desc"></p>
+                <div class="pt-10 border-t border-white/10">
+                    <p class="dns-eyebrow font-black uppercase tracking-[0.3em] text-dns-teal mb-4" x-text="content[lang].sP_ref_label"></p>
+                    <h4 class="dns-item-title font-black uppercase tracking-widest mb-4" x-text="content[lang].sP_ref_name"></h4>
+                    <p class="dns-item-desc font-light opacity-80 leading-relaxed" x-text="content[lang].sP_ref_desc"></p>
+                </div>
             </div>
-            <div class="bg-dns-deep p-16 rounded-[5rem] text-center text-white shadow-3xl border-[12px] border-white relative overflow-hidden">
+            <!-- know-how -->
+            <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <template x-for="(k, i) in content[lang].sP_knowhow">
+                    <button @click="activePartner = i" class="p-8 rounded-[2.5rem] border-2 transition-all text-left"
+                            :class="activePartner === i ? 'bg-dns-primary text-white border-dns-primary shadow-2xl' : 'bg-dns-bg border-dns-soft/20 text-dns-primary opacity-70 hover:opacity-100'">
+                        <svg class="w-9 h-9 wf-icon mb-6" :class="activePartner === i ? 'text-dns-soft' : 'text-dns-primary'" viewBox="0 0 24 24" x-html="k.icon"></svg>
+                        <h4 class="font-black dns-item-title uppercase tracking-widest mb-3" x-text="k.t"></h4>
+                        <p class="dns-item-desc font-light leading-relaxed opacity-80" x-text="k.d" x-show="activePartner === i"></p>
+                    </button>
+                </template>
+            </div>
+        </div>
+        <div class="mt-12 bg-dns-bg border-l-[12px] border-dns-teal p-8 rounded-[2.5rem]">
+            <p class="dns-item-desc font-light leading-relaxed text-dns-primary" x-html="content[lang].sP_second"></p>
+        </div>
+    </section>
+
+    <!-- Slide 9: CLEARING & FINANCE -->
+    <section id="slide-9" class="slide-section bg-white">
+        <h2 class="s-h2 s-h2-solo text-dns-primary" x-text="content[lang].s7_title"></h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div class="space-y-6">
+                <template x-for="(f, i) in content[lang].s7_items">
+                    <button @click="activeFin = i" class="w-full p-10 rounded-[3rem] border-l-[12px] transition-all text-left shadow-2xl"
+                            :class="activeFin === i ? 'bg-dns-primary text-white border-dns-soft' : 'bg-dns-bg border-dns-soft/20 text-dns-primary opacity-60 hover:opacity-100'">
+                        <h4 class="font-black uppercase dns-item-title mb-4 tracking-widest" :class="activeFin === i ? 'text-dns-soft' : 'text-dns-deep'" x-text="f.t"></h4>
+                        <p class="dns-item-desc font-light leading-relaxed" x-text="f.d" x-show="activeFin === i"></p>
+                    </button>
+                </template>
+            </div>
+            <div class="bg-dns-deep p-16 rounded-[3.5rem] text-center text-white shadow-3xl border-[12px] border-white relative overflow-hidden">
                 <div class="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
                 <svg class="w-24 h-24 text-dns-soft mx-auto mb-10 wf-icon" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 <h4 class="dns-detail-title font-black mb-4 uppercase tracking-tighter">REST Shop-API</h4>
-                <p class="dns-eyebrow text-dns-soft/60 font-black uppercase tracking-[0.3em]">Unidirectional Inbound Sync</p>
+                <p class="dns-eyebrow text-dns-soft/60 font-black uppercase tracking-[0.3em]" x-text="content[lang].s7_api"></p>
             </div>
         </div>
     </section>
 
-    <!-- Slide 7: GOVERNANCE -->
-    <section id="slide-7" class="slide-section bg-dns-deep text-white">
-        <h2 class="text-4xl md:text-5xl font-black mb-16 text-dns-soft uppercase tracking-tighter" x-text="content[lang].s8_title"></h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+    <!-- Slide 10: GOVERNANCE -->
+    <section id="slide-10" class="slide-section bg-dns-deep text-white">
+        <h2 class="s-h2 text-dns-soft" x-text="content[lang].s8_title"></h2>
+        <p class="s-lead text-white/50" x-text="content[lang].s8_lead"></p>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <template x-for="(item, i) in content[lang].s8_items">
-                <button @click="activeGov = i" class="p-10 rounded-[3.5rem] border-2 transition-all text-left relative overflow-hidden group" :class="activeGov === i ? 'bg-dns-primary border-dns-soft shadow-3xl scale-105' : 'bg-transparent border-dns-teal/20 opacity-50 hover:opacity-100'">
-                    <div class="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity"><svg class="w-24 h-24 wf-icon" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div>
-                    <h4 class="text-dns-soft font-black dns-item-title uppercase mb-6 tracking-widest pr-10" x-text="item.t"></h4>
+                <button @click="activeGov = i" class="p-10 rounded-[3rem] border-2 transition-all text-left relative overflow-hidden group" :class="activeGov === i ? 'bg-dns-primary border-dns-soft shadow-3xl scale-105' : 'bg-transparent border-dns-teal/20 opacity-50 hover:opacity-100'">
+                    <svg class="w-10 h-10 text-dns-soft mb-8 wf-icon" viewBox="0 0 24 24" x-html="item.icon"></svg>
+                    <h4 class="text-dns-soft font-black dns-item-title uppercase mb-5 tracking-widest" x-text="item.t"></h4>
                     <p class="dns-item-desc opacity-80 leading-relaxed font-light" x-text="item.d" x-show="activeGov === i"></p>
                 </button>
             </template>
         </div>
     </section>
 
-    <!-- Slide 8: KPI -->
-    <section id="slide-8" class="slide-section bg-white">
-        <h2 class="text-4xl md:text-5xl font-black mb-16 text-dns-primary uppercase tracking-tighter" x-text="content[lang].s9_title"></h2>
+    <!-- Slide 11: SUCCESS FACTORS STAGE 0 -->
+    <section id="slide-11" class="slide-section bg-white">
+        <h2 class="s-h2 text-dns-primary" x-text="content[lang].s9_title"></h2>
+        <p class="s-lead text-dns-teal" x-text="content[lang].s9_lead"></p>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <template x-for="(kpi, i) in content[lang].s9_kpis">
                 <button @click="activeKPI = i" class="p-10 rounded-[3rem] text-center border-2 transition-all group" :class="activeKPI === i ? 'bg-dns-primary text-white border-dns-primary shadow-3xl scale-105' : 'bg-dns-bg border-dns-soft/10 text-dns-primary opacity-60 hover:opacity-100'">
@@ -328,215 +469,792 @@
         </div>
     </section>
 
-    <!-- Slide 9: ROADMAP -->
-    <section id="slide-9" class="slide-section bg-dns-soft text-dns-deep">
-        <h2 class="text-4xl md:text-5xl font-black mb-20 text-center uppercase tracking-tighter" x-text="content[lang].s7_title"></h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-7xl mx-auto w-full text-left">
-            <template x-for="(s, i) in content[lang].s7_stages">
-                <button @click="activeRoad = i" class="p-12 rounded-[4rem] border-2 transition-all text-left relative overflow-hidden" :class="activeRoad === i ? 'bg-white border-dns-primary shadow-3xl scale-105' : 'bg-white/30 border-dns-primary/5 opacity-50 hover:opacity-100'">
-                    <span class="text-dns-primary font-black text-7xl opacity-10 absolute top-8 right-8" x-text="'0'+(i+1)"></span>
-                    <h4 class="dns-item-title font-black mb-6 uppercase text-dns-primary tracking-tighter pr-16" x-text="s.t"></h4>
-                    <p class="dns-item-desc font-light leading-relaxed opacity-80 pr-4" x-text="s.d" x-show="activeRoad === i"></p>
+    <!-- Slide 12: ROADMAP -->
+    <section id="slide-12" class="slide-section bg-dns-soft text-dns-deep">
+        <h2 class="s-h2 text-center text-dns-deep" x-text="content[lang].s10_title"></h2>
+        <p class="s-lead text-center mx-auto opacity-70" x-text="content[lang].s10_lead"></p>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-7xl mx-auto w-full text-left">
+            <template x-for="(s, i) in content[lang].s10_stages">
+                <button @click="activeRoad = i" class="p-10 rounded-[3rem] border-2 transition-all text-left relative overflow-hidden" :class="activeRoad === i ? 'bg-white border-dns-primary shadow-3xl scale-105' : 'bg-white/30 border-dns-primary/5 opacity-50 hover:opacity-100'">
+                    <p class="dns-eyebrow font-black uppercase tracking-[0.3em] text-dns-teal mb-4" x-text="s.when"></p>
+                    <h4 class="dns-item-title font-black mb-5 uppercase text-dns-primary tracking-tighter" x-text="s.t"></h4>
+                    <p class="dns-item-desc font-light leading-relaxed opacity-80" x-text="s.d" x-show="activeRoad === i"></p>
                 </button>
             </template>
         </div>
-        <p class="mt-20 text-center font-black uppercase tracking-[0.6em] text-dns-primary dns-eyebrow opacity-60" x-text="content[lang].s7_loc"></p>
+        <p class="mt-16 text-center font-black uppercase tracking-[0.5em] text-dns-primary dns-eyebrow opacity-60" x-text="content[lang].s10_loc"></p>
+    </section>
+
+    <!-- Slide 13: COSA APRE -->
+    <section id="slide-13" class="slide-section bg-white">
+        <h2 class="s-h2 text-dns-primary" x-text="content[lang].sO_title"></h2>
+        <p class="s-lead s-lead-tight text-dns-teal" x-text="content[lang].sO_lead"></p>
+        <!-- continuity bar -->
+        <div class="flex flex-col md:flex-row items-stretch gap-4 mb-14">
+            <template x-for="(c, i) in content[lang].sO_chain">
+                <div class="flex-1 p-8 rounded-[2.5rem] border-2 relative"
+                     :class="i === 1 ? 'bg-dns-primary text-white border-dns-primary shadow-2xl' : 'bg-dns-bg border-dns-soft/20 text-dns-primary'">
+                    <p class="dns-eyebrow font-black uppercase tracking-[0.3em] mb-3" :class="i === 1 ? 'text-dns-soft' : 'text-dns-teal'" x-text="c.step"></p>
+                    <h4 class="font-black dns-item-title uppercase tracking-widest mb-2" x-text="c.t"></h4>
+                    <p class="dns-item-desc font-light opacity-80" x-text="c.d"></p>
+                </div>
+            </template>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <template x-for="(g, i) in content[lang].sO_groups">
+                <button @click="activeOpp = i" class="p-10 rounded-[3rem] border-2 transition-all text-left"
+                        :class="activeOpp === i ? 'bg-dns-deep text-white border-dns-soft shadow-3xl scale-[1.03]' : 'bg-dns-bg border-dns-soft/20 text-dns-primary opacity-70 hover:opacity-100'">
+                    <p class="dns-eyebrow font-black uppercase tracking-[0.25em] mb-4" :class="activeOpp === i ? 'text-dns-soft' : 'text-dns-teal'" x-text="g.tag"></p>
+                    <h4 class="font-black dns-item-title uppercase tracking-widest mb-6" x-text="g.t"></h4>
+                    <ul class="space-y-3" x-show="activeOpp === i">
+                        <template x-for="p in g.points">
+                            <li class="dns-item-desc font-light leading-relaxed opacity-85 flex items-start">
+                                <span class="mr-3 mt-1.5 w-1.5 h-1.5 rounded-full bg-dns-soft flex-shrink-0"></span>
+                                <span x-text="p"></span>
+                            </li>
+                        </template>
+                    </ul>
+                </button>
+            </template>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-dns-primary text-white p-12 rounded-[3.5rem] shadow-3xl border-l-[12px] border-dns-soft">
+                <p class="dns-detail-desc font-light leading-relaxed" x-html="content[lang].sO_bridge"></p>
+            </div>
+            <div class="bg-dns-bg border-2 border-dns-soft/30 p-12 rounded-[3.5rem]">
+                <p class="dns-eyebrow font-black uppercase tracking-[0.3em] text-dns-teal mb-5" x-text="content[lang].sO_note_label"></p>
+                <p class="dns-item-desc font-light leading-relaxed text-dns-primary opacity-85" x-text="content[lang].sO_note"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 14: QUADRO ECONOMICO -->
+    <section id="slide-14" class="slide-section bg-dns-primary text-white">
+        <h2 class="s-h2 text-dns-soft" x-text="content[lang].s11_title"></h2>
+        <p class="s-lead text-white/60" x-text="content[lang].s11_lead"></p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-14">
+            <template x-for="(f, i) in content[lang].s11_figures">
+                <div class="bg-dns-deep p-10 rounded-[3rem] border-b-[10px] border-dns-soft/40 shadow-3xl">
+                    <p class="dns-eyebrow font-black uppercase tracking-[0.25em] text-dns-teal mb-5" x-text="f.label"></p>
+                    <p class="s-stat text-dns-soft mb-4" x-text="f.value"></p>
+                    <p class="dns-item-desc font-light opacity-70 leading-relaxed" x-text="f.note"></p>
+                </div>
+            </template>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-dns-deep/60 p-12 rounded-[3.5rem] border-l-[12px] border-red-400/60">
+                <h4 class="font-black dns-item-title uppercase tracking-widest text-red-200 mb-5" x-text="content[lang].s11_q_title"></h4>
+                <p class="dns-detail-desc font-light leading-relaxed opacity-85" x-text="content[lang].s11_q_desc"></p>
+            </div>
+            <div class="bg-dns-deep/60 p-12 rounded-[3.5rem] border-l-[12px] border-dns-soft">
+                <h4 class="font-black dns-item-title uppercase tracking-widest text-dns-soft mb-5" x-text="content[lang].s11_floor_title"></h4>
+                <p class="dns-detail-desc font-light leading-relaxed opacity-85" x-text="content[lang].s11_floor_desc"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 15: LA DECISIONE -->
+    <section id="slide-15" class="slide-section bg-dns-deep text-white">
+        <h2 class="s-h2 text-dns-soft" x-text="content[lang].sD_title"></h2>
+        <p class="s-lead text-white/60" x-text="content[lang].sD_lead"></p>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-dns-primary p-12 rounded-[3.5rem] shadow-3xl border-l-[12px] border-dns-soft">
+                <p class="dns-eyebrow font-black uppercase tracking-[0.3em] text-dns-soft mb-5" x-text="content[lang].sD_yes_label"></p>
+                <p class="s-stat text-white mb-6" x-text="content[lang].sD_amount"></p>
+                <p class="dns-item-desc font-light leading-relaxed opacity-85" x-text="content[lang].sD_yes"></p>
+            </div>
+            <div class="bg-dns-primary/30 p-12 rounded-[3.5rem] border-l-[12px] border-white/20">
+                <p class="dns-eyebrow font-black uppercase tracking-[0.3em] text-dns-teal mb-5" x-text="content[lang].sD_no_label"></p>
+                <ul class="space-y-4">
+                    <template x-for="n in content[lang].sD_no">
+                        <li class="dns-item-desc font-light leading-relaxed opacity-85 flex items-start">
+                            <span class="mr-4 mt-2 w-1.5 h-1.5 rounded-full bg-white/40 flex-shrink-0"></span>
+                            <span x-text="n"></span>
+                        </li>
+                    </template>
+                </ul>
+            </div>
+            <div class="bg-dns-primary/30 p-12 rounded-[3.5rem] border-l-[12px] border-dns-soft/60">
+                <p class="dns-eyebrow font-black uppercase tracking-[0.3em] text-dns-soft mb-5" x-text="content[lang].sD_need_label"></p>
+                <ul class="space-y-4">
+                    <template x-for="n in content[lang].sD_need">
+                        <li class="dns-item-desc font-light leading-relaxed opacity-85 flex items-start">
+                            <span class="mr-4 mt-2 w-1.5 h-1.5 rounded-full bg-dns-soft flex-shrink-0"></span>
+                            <span x-text="n"></span>
+                        </li>
+                    </template>
+                </ul>
+            </div>
+            <div class="bg-dns-primary/30 p-12 rounded-[3.5rem] border-l-[12px] border-red-400/60">
+                <p class="dns-eyebrow font-black uppercase tracking-[0.3em] text-red-200 mb-5" x-text="content[lang].sD_risk_label"></p>
+                <p class="dns-item-desc font-light leading-relaxed opacity-85" x-text="content[lang].sD_risk"></p>
+            </div>
+        </div>
     </section>
 
     <script>
         function dnsDeck() {
             return {
-                lang: 'it', activeLayer: 0, activeStep: 0, activeGeo: 0, activeControl: 0, activeFin: 0, activeGov: 0, activeKPI: 0, activeRoad: 0,
-                activeSlide: 1,
+                lang: 'it', activeLayer: 0, activeStep: 0, activeGeo: 0, activeControl: 0,
+                activeFin: 0, activeGov: 0, activeKPI: 0, activeRoad: 0, activeProof: 0, activePartner: 0, activeCarrier: 0, activeOpp: 0, activeProblem: 0,
+                activeSlide: 1, totalSlides: 15,
+                progress: 0, autoplay: false, autoTimer: null, autoMs: 15000,
+
                 init() {
                     const sections = document.querySelectorAll('.slide-section[id^="slide-"]');
-                    const observer = new IntersectionObserver((entries) => {
+                    this.totalSlides = sections.length;
+
+                    /* --- slide attiva --- */
+                    const nav = new IntersectionObserver((entries) => {
                         entries.forEach(entry => {
                             if (entry.isIntersecting) {
                                 this.activeSlide = parseInt(entry.target.id.replace('slide-', ''));
                             }
                         });
                     }, { rootMargin: '-50% 0px -50% 0px', threshold: 0 });
-                    sections.forEach(s => observer.observe(s));
+                    sections.forEach(el => nav.observe(el));
 
-                    window.addEventListener('keydown', (e) => {
-                        if (e.key === 'ArrowDown' || e.key === 'PageDown') {
-                            e.preventDefault();
-                            this.goToSlide(Math.min(this.activeSlide + 1, sections.length));
-                        } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
-                            e.preventDefault();
-                            this.goToSlide(Math.max(this.activeSlide - 1, 1));
+                    /* --- comparsa progressiva degli elementi --- */
+                    const rv = new IntersectionObserver((entries) => {
+                        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('rv-in'); rv.unobserve(e.target); } });
+                    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.08 });
+
+                    sections.forEach(sec => {
+                        let targets = Array.from(sec.children);
+                        // la prima slide ha un wrapper: scendi di un livello
+                        if (targets.length && targets.length <= 2 && targets[0].children.length > 2) {
+                            targets = Array.from(targets[0].children);
                         }
+                        targets = targets.filter(el => !el.className || !String(el.className).includes('absolute'));
+                        targets.forEach((el, i) => {
+                            el.setAttribute('data-rv', '');
+                            el.style.setProperty('--rv-d', Math.min(i * 95, 480) + 'ms');
+                            rv.observe(el);
+                        });
                     });
+
+                    /* --- barra di avanzamento --- */
+                    const upd = () => {
+                        const h = document.documentElement.scrollHeight - window.innerHeight;
+                        this.progress = h > 0 ? Math.min(100, (window.scrollY / h) * 100) : 0;
+                    };
+                    window.addEventListener('scroll', upd, { passive: true });
+                    window.addEventListener('resize', upd);
+                    upd();
+
+                    /* --- tastiera --- */
+                    window.addEventListener('keydown', (e) => {
+                        if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+                            e.preventDefault(); this.stopAuto();
+                            this.goToSlide(Math.min(this.activeSlide + 1, this.totalSlides));
+                        } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+                            e.preventDefault(); this.stopAuto();
+                            this.goToSlide(Math.max(this.activeSlide - 1, 1));
+                        } else if (e.key === 'Escape') { this.stopAuto(); }
+                    });
+
+                    /* --- interazione manuale mette in pausa --- */
+                    ['wheel', 'touchstart', 'mousedown'].forEach(ev =>
+                        window.addEventListener(ev, () => { if (this.autoplay) this.stopAuto(); }, { passive: true })
+                    );
                 },
+
                 goToSlide(n) {
                     document.getElementById('slide-' + n)?.scrollIntoView({ behavior: 'smooth' });
                 },
+
+                toggleAuto() { this.autoplay ? this.stopAuto() : this.startAuto(); },
+
+                startAuto() {
+                    this.autoplay = true;
+                    this.autoTimer = setInterval(() => {
+                        if (this.activeSlide >= this.totalSlides) { this.stopAuto(); return; }
+                        this.goToSlide(this.activeSlide + 1);
+                    }, this.autoMs);
+                },
+
+                stopAuto() {
+                    this.autoplay = false;
+                    if (this.autoTimer) { clearInterval(this.autoTimer); this.autoTimer = null; }
+                },
                 content: {
+                    /* ============================ ITALIANO ============================ */
                     it: {
                         s1_tag: "Project Scope & Strategy",
                         s1_title: "DNS Digital <br>Infrastructure <span class='text-dns-soft'>Platform</span>",
-                        s1_desc: "L'obiettivo non è digitalizzare la vendita, ma l'infrastruttura. Una piattaforma proprietaria per il controllo intelligente e la sovranità dei dati delle Smart Slopes.",
-                        s2_title: "Architettura Strategica",
+                        s1_desc: "L'obiettivo non è digitalizzare la vendita, ma l'infrastruttura. Una piattaforma per il controllo intelligente dell'accesso e la sovranità dei dati delle Smart Slopes.",
+
+
+                        sQ_title: "Il problema oggi",
+                        sQ_lead: "Prima di parlare di soluzioni, vale la pena guardare da dove partiamo.",
+                        sQ_points: [
+                            { icon: '<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>', t: "Tutto su carta", d: "Stampa, distribuzione, vendita frammentata sui punti vendita, riconciliazione manuale. Un lavoro che si ripete ogni stagione in otto regioni." },
+                            { icon: '<path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>', t: "Sappiamo cosa vendiamo, non chi scia", d: "Conosciamo i biglietti venduti. Non sappiamo quante persone sono effettivamente in pista, quando, né in quale zona. Le decisioni di rete si prendono su stime." },
+                            { icon: '<path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>', t: "Il controllo ferma tutti e intercetta pochi", d: "Il personale deve fermare ogni persona per verificare un pezzo di carta. È costoso, rallenta l'ospite, crea attrito — e intercetta comunque solo una frazione." },
+                            { icon: '<path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>', t: "Prodotti flessibili impossibili", d: "Mezza giornata, multi-day non consecutivi, tariffe di bassa stagione: sulla carta non sono gestibili. L'offerta resta rigida perché lo strumento è rigido." }
+                        ],
+                        sQ_root: "La ragione strutturale è una sola: <strong class='text-dns-soft'>le piste costano manutenzione ogni giorno, ma l'accesso non è di fatto controllabile.</strong> Non è un problema di DNS — è il problema di tutta l'infrastruttura outdoor senza tornelli.",
+
+                        sD_title: "La decisione",
+                        sD_lead: "Cosa viene chiesto oggi al Vorstand, e cosa espressamente non viene chiesto.",
+                        sD_yes_label: "Si decide oggi",
+                        sD_amount: "Stage 0 · max 30.000 €",
+                        sD_yes: "Il test tecnico di fattibilità in questo inverno: pochi dispositivi, misure documentate, nessun utente reale. Il preventivo definitivo è atteso e sostituirà questo tetto.",
+                        sD_no_label: "Non si decide oggi",
+                        sD_no: [
+                            "Il beta con utenti reali: se ne parla in primavera 2027, sui risultati",
+                            "Il pieno sviluppo e i suoi 150–200.000 €",
+                            "Nessun impegno sul fornitore per le fasi successive",
+                            "Nessun impegno sui costi ricorrenti finché non è chiaro chi li sostiene"
+                        ],
+                        sD_need_label: "Cosa serve oltre al budget",
+                        sD_need: [
+                            "Un mandato negoziale chiaro su cosa si può concordare con il fornitore",
+                            "Il riconoscimento che è un percorso pluriennale, non una decisione di stagione",
+                            "Una persona di riferimento oltre alla direzione: oggi il progetto poggia su una sola",
+                            "La conferma della regione pilota"
+                        ],
+                        sD_risk_label: "Se non si decide ora",
+                        sD_risk: "Il test ha bisogno di condizioni invernali reali: freddo, copertura arborea, terreno vero. Mancata la finestra di questo inverno, la verifica slitta di un anno intero — e con essa ogni decisione successiva.",
+                        s2_title: "Architettura Federata",
                         s2_layers: [
-                            { icon: '<path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5"/>', title: "1. Commerce", desc: "Gestito da LTS TIC-Web. Vendita, pagamenti e IVA rimangono alle singole regioni. PRIOT non tocca il flusso finanziario." },
-                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', title: "2. Identity", desc: "Pass Digitale pseudonimizzato creato da PRIOT. Separazione netta tra identità (LTS) e diritto d'accesso." },
-                            { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', title: "3. Infrastructure", desc: "Geofencing e Sessione. GPS attivo solo in pista per fini legali e tecnici tramite Infrastructure Session." },
-                            { icon: '<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2"/>', title: "4. Intelligence", desc: "Analytics aggregati e Destination Intelligence per decisioni strategiche basate su dati di afflusso reali e sicurezza." }
+                            { icon: '<path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5"/>', title: "1. Commerce", owner: "LTS · Regioni", desc: "Gestito da LTS TIC-Web. Vendita, incasso e IVA restano alle regioni. Il fornitore tecnologico non tocca mai il flusso finanziario." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', title: "2. Identity", owner: "Fornitore tecnologico", desc: "Digital Pass pseudonimizzato. Separazione netta fra identità (che resta a LTS e alle regioni) e diritto d'accesso." },
+                            { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', title: "3. Infrastructure", owner: "DNS · General Solutions", desc: "Geofencing e Infrastructure Session. La geometria dei confini viene generata dai GPX delle regioni da General Solutions sulla piattaforma Contwise Maps e fornita via interfaccia GeoJSON. Resta fuori dallo stack del fornitore di ticketing." },
+                            { icon: '<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2"/>', title: "4. Intelligence", owner: "DNS Sovereignty", desc: "Analytics aggregata e Destination Intelligence per decisioni di rete basate su dati di afflusso reali." }
                         ],
+
                         s3_title: "Ciclo di Vita / Sessione",
+                        s3_stepword: "Fase",
                         s3_steps: [
-                            { icon: '<path d="M3 3h18v18H3zM3 9h18"/>', label: "Acquisto", detail: "Acquisto online tramite LTS. L'incasso rimane alle regioni, PRIOT riceve l'evento via API." },
-                            { icon: '<path d="M12 2v20M2 12h20"/>', label: "Arrivo", detail: "L'utente arriva nel comprensorio. L'app DNS è pronta a gestire il diritto d'accesso caricato." },
-                            { icon: '<path d="M11 19l-7-7 7-7"/>', label: "Ingresso", detail: "L'ingresso nel geofence viene rilevato silenziosamente per preparare l'attivazione automatica." },
-                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', label: "Sessione", detail: "Si apre la 'Infrastructure Session'. Il GPS monitora la presenza per la validazione in tempo reale." },
-                            { icon: '<path d="M13 5l7 7-7 7"/>', label: "Uscita", detail: "Uscendo dall'area sciabile, la sessione si chiude automaticamente per privacy e risparmio batteria." },
-                            { icon: '<path d="M5 3v18l15-9z"/>', label: "Fine", detail: "I dati vengono aggregati in forma anonima per le statistiche di Destination Intelligence." }
+                            { icon: '<path d="M3 3h18v18H3zM3 9h18"/>', label: "Acquisto", detail: "Acquisto online tramite LTS. L'incasso resta alle regioni, il sistema riceve solo l'evento di vendita." },
+                            { icon: '<path d="M12 2v20M2 12h20"/>', label: "Arrivo", detail: "L'utente arriva nel comprensorio con il pass già caricato nell'app." },
+                            { icon: '<path d="M11 19l-7-7 7-7"/>', label: "Ingresso", detail: "L'ingresso nel geofence viene rilevato e prepara l'apertura della sessione." },
+                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', label: "Sessione", detail: "Si apre la Infrastructure Session: è la finestra che delimita legalmente il trattamento dei dati di posizione." },
+                            { icon: '<path d="M13 5l7 7-7 7"/>', label: "Uscita", detail: "Uscendo dall'area la sessione si chiude automaticamente: privacy e risparmio batteria." },
+                            { icon: '<path d="M5 3v18l15-9z"/>', label: "Fine", detail: "I dati confermati vengono aggregati in forma anonima per le statistiche di rete." }
                         ],
+
+
+                        sT_title: "Il pass e la libertà di scelta",
+                        sT_lead: "Il codice è uno, il contenitore lo sceglie l'ospite. La validazione funziona in tutti i casi: cambia solo il modo.",
+                        sT_carriers: [
+                            { icon: '<path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>', t: "App DNS", who: "Stagionali · settimanali", d: "Per chi vuole il resto: attivazione automatica della sessione, validazione senza fermarsi, statistiche personali e, in futuro, servizi agganciati al pass." },
+                            { icon: '<path d="M3 10h18M7 15h.01M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>', t: "Wallet digitale", who: "Chi non vuole l'app", d: "Il QR nel wallet del telefono, come un biglietto qualsiasi. Nessuna app, nessun GPS, nessun tracciamento. Il controllore ferma e scansiona." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', t: "Carte ospite esistenti", who: "Turisti · fase successiva", d: "Il pass viaggia su un supporto che l'ospite ha già in tasca. Richiede l'accordo con il gestore della carta: prospettiva, non pilota." }
+                        ],
+                        sT_freedom: "<strong class='text-dns-soft'>Nessuno è costretto ad accettare il tracciamento per sciare.</strong> Il GPS è ciò che si riceve in cambio di comodità — validazione senza fermarsi, statistiche, servizi — non una condizione d'accesso. In entrambi i casi la validazione la fa il controllore.",
+
+                        sO_title: "Cosa apre",
+                        sO_lead: "Non è un progetto nuovo. È il livello successivo di E-DNS: stessa rete, stessi partner, stessa mappa. Sopra ci mettiamo l'accesso e i dati.",
+                        sO_chain: [
+                            { step: "Fatto", t: "E-DNS", d: "Mappa condivisa e comunicazione delle otto regioni." },
+                            { step: "Adesso", t: "Smart Slopes", d: "Accesso digitale e dati d'uso reali sulla stessa mappa." },
+                            { step: "Poi", t: "Servizi", d: "Valore per l'ospite e ricavi per le regioni sullo stesso pass." }
+                        ],
+                        sO_groups: [
+                            { tag: "Subito · quasi certo", t: "Dentro la rete", points: [
+                                "Fine della carta: stampa, distribuzione, riconciliazione",
+                                "Dati d'uso reali per regione: il modello FAIR alimentato da misure invece che da stime",
+                                "Controllo più rapido e meno conflittuale: si ferma solo chi non risulta",
+                                "Sicurezza: sapere in tempo reale che qualcuno è in pista"
+                            ]},
+                            { tag: "Plausibile · qui sta il denaro", t: "Ricavi per le regioni", points: [
+                                "Prodotti impossibili sulla carta: mezza giornata, multi-day, bassa stagione, prima traccia",
+                                "Servizi agganciati al pass: armadietti, noleggio, scuola sci, ristorazione",
+                                "Il ricavo resta alla regione e al partner locale, DNS fornisce la capacità tecnica",
+                                "Estensione estiva dove esiste una prestazione: trail manutenuti, non sentieri liberi"
+                            ]},
+                            { tag: "Strategico · da costruire", t: "Ritorno per DNS", points: [
+                                "DNS non vende software e non incassa dai biglietti: non ne ha la struttura né il ruolo",
+                                "Ciò che DNS possiede è il disegno del sistema",
+                                "Se il disegno viene riusato fuori dalla rete, DNS partecipa con una quota o condizioni preferenziali",
+                                "La replicabilità è precisamente ciò che i programmi europei finanziano"
+                            ]}
+                        ],
+                        sO_bridge: "Questa è la strada verso l'autosostenibilità del sistema, non un ricavo garantito. <strong class='text-dns-soft'>Per dare l'ordine di grandezza: il costo annuo di esercizio equivale a un contributo per pass inferiore all'euro, sui volumi attuali della rete.</strong> I costi della slide successiva restano da coprire — ma per la prima volta esiste un meccanismo che li può coprire.",
+                        sO_note_label: "Una precisazione necessaria",
+                        sO_note: "DNS non fissa prezzi, non centralizza incassi e non vende all'ospite finale. Ogni eventuale ritorno per DNS nasce dal riuso del disegno al di fuori della rete.",
                         s4_title: "Geofencing Operativo",
+                        s4_badge_on: "Sessione attiva",
+                        s4_badge_off: "Nessun trattamento",
+                        s4_note: "La geometria dei confini arriva da General Solutions · Contwise Maps e non cambia mai automaticamente",
                         s4_points: [
-                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', t: "Auto-Activation", d: "La sessione si attiva e si chiude automaticamente all'ingresso/uscita dal perimetro di pista." },
-                            { icon: '<path d="M12 8v4l3 3"/>', t: "Battery Care", d: "Campionamento GPS ottimizzato specificamente per il clima freddo e le lunghe sessioni." },
-                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Legal Basis", d: "La sessione delimita il perimetro legale per il trattamento dei dati GPS." }
+                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', t: "Attivazione automatica", d: "La sessione si apre e si chiude all'ingresso e all'uscita dal perimetro. Nessuna azione richiesta all'utente." },
+                            { icon: '<path d="M12 8v4l3 3"/>', t: "Consumo batteria", d: "È la variabile critica da misurare: campionamento da ottimizzare per freddo e giornate lunghe." },
+                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Base giuridica", d: "La sessione delimita il perimetro legale del trattamento dei dati di posizione." },
+                            { icon: '<path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>', t: "Geometria da Contwise Maps", d: "I poligoni sono generati dai GPX delle regioni da General Solutions sulla piattaforma Contwise Maps e forniti tramite interfaccia GeoJSON già esistente, insieme allo stato di battitura in tempo reale. Restano di DNS e delle regioni." }
                         ],
-                        s5_title: "Ticket Control",
+
+                        s5_title: "Validazione Assistita",
+                        s5_lead: "Il geofence non è un tornello automatico: stabilisce una presunzione di presenza. Il record ufficiale nasce quando il controllore conferma.",
+                        s5_device: "Vista controllore · pass attivi nelle vicinanze",
                         s5_features: [
-                            { icon: '<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>', t: "Real-time Identify", d: "Interrogazione live: i punti GPS sulla mappa corrispondono a ticket validi rilevati." },
-                            { icon: '<path d="M12 4v1m6 11h2"/>', t: "QR Fallback", d: "Controllo manuale del QR per chi non risulta visibile (offline o anomalie)." }
+                            { icon: '<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>', t: "Presunzione", d: "Il sistema segnala i pass attivi nell'area. È un'indicazione, non ancora una validazione." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', t: "Conferma umana", d: "Il controllore, posizionato in un punto stretto della pista, conferma nell'app. Solo allora il dato diventa ufficiale." },
+                            { icon: '<path d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z"/>', t: "Falsi positivi ininfluenti", d: "Chi si trova nell'area senza sciare non viene mai confermato: nessun addebito errato, anche con un geofence largo." },
+                            { icon: '<path d="M12 4v1m6 11h2M4 16H2m14.24-6.24l1.42-1.42M6.34 9.76L4.92 8.34"/>', t: "Fallback QR", d: "In assenza di rete o per chi rinuncia alla localizzazione resta il controllo QR offline." },
+                            { icon: '<path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 9v1m0-9c-1.11 0-2.08.402-2.599 1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>', t: "Vendita in pista", d: "Se il controllore trova qualcuno senza pass, lo emette e lo incassa dallo stesso telefono — pagamento tramite link sulla piattaforma di vendita esistente, con i contanti come rete di sicurezza offline. Il prezzo in pista prevede un supplemento, deciso dalla regione." }
                         ],
-                        s6_title: "Clearing & Finance",
-                        s6_clearing: "LTS funge da Merchant of Record: incassa, trattiene l'8% e liquida alle regioni. DNS/PRIOT non toccano denaro.",
-                        s6_privacy: "Separazione netta: LTS tiene l'identità, PRIOT gestisce solo codici pseudonimi (Digital Pass ID).",
+
+                        s6_title: "Non è un esperimento",
+                        s6_lead: "I singoli componenti sono già in esercizio altrove. Nuova è la loro combinazione e l'applicazione a un'infrastruttura senza tornelli.",
+                        s6_proofs: [
+                            { icon: '<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>', t: "Pass digitale", where: "Svizzera · dal 2017/18", d: "Circa 120 organizzazioni di piste da fondo usano un pass digitale con validazione da parte del personale di controllo." },
+                            { icon: '<path d="M5 12h14M12 5l7 7-7 7"/>', t: "Ticketing digitale", where: "Trentino · dal 2022", d: "Un centro fondo vicino a noi usa il ticketing digitale, ma con hardware RFID: l'approccio che abbiamo deliberatamente scartato." },
+                            { icon: '<path d="M12 2a10 10 0 100 20 10 10 0 000-20zM2 12h20M12 2a15 15 0 010 20 15 15 0 010-20z"/>', t: "Geofence come trigger", where: "7 paesi UE · oltre 10 anni", d: "Il pedaggio satellitare per i mezzi pesanti addebita al passaggio di confini virtuali, senza infrastruttura a bordo strada." }
+                        ],
+                        s6_conclusion: "Lo sci alpino ha risolto l'accesso a pagamento con i <strong>tornelli agli impianti</strong>. Tutto ciò che non ha un collo di bottiglia fisico — fondo, trail manutenuti, aree naturali gestite — non ha mai avuto una risposta. <strong class='text-dns-soft'>È esattamente lì che si colloca il nostro approccio.</strong>",
+
+
+                        sP_title: "Il partner tecnologico",
+                        sP_lead: "Chi realizzerebbe il sistema, e perché proprio loro.",
+                        sP_who_label: "Chi sono",
+                        sP_company: "PRIOT Digital Systems",
+                        sP_company_desc: "Maribor, Slovenia. Piattaforme Web e IoT per infrastrutture sportive e turistiche.",
+                        sP_ref_label: "Referenza",
+                        sP_ref_name: "Nordic Center Planica",
+                        sP_ref_desc: "Pass stagionali e giornalieri con chip RFID e QR code su card e adesivi, validazione contactless tramite scanner portatile — senza fermare i visitatori — e rilevamento dei tempi personali per gli atleti.",
+                        sP_knowhow: [
+                            { icon: '<path d="M12 2l3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6L3 9l6-1z"/>', t: "Esperienza nel verticale nordico", d: "Non è un fornitore generalista. Planica è un centro di sci nordico, con le stesse dinamiche di accesso e di pubblico delle nostre aree." },
+                            { icon: '<path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>', t: "Piattaforma esistente", d: "Non partono da zero: riusano il proprio sistema di ticketing e tracciamento. È il motivo per cui il prezzo è contenuto — ed è insieme la ragione per cui le condizioni contrattuali contano." },
+                            { icon: '<path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.9 9.9 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>', t: "Hanno proposto loro il modello senza hardware", d: "Dopo aver ascoltato i nostri requisiti hanno messo da parte il proprio approccio RFID e proposto la via puramente digitale. Segnale di ascolto, non di vendita." },
+                            { icon: '<path d="M4 20h4v-4H4v4zm6 0h4V10h-4v10zm6 0h4V4h-4v16z"/>', t: "Disponibilità a procedere per stadi", d: "Già a giugno hanno suggerito loro di iniziare con un piccolo test tecnologico prima di impegnarsi su un pilota completo." }
+                        ],
+                        sP_second: "Secondo partner tecnologico: <strong>General Solutions · Contwise Maps</strong> — già partner di DNS e delle otto regioni nel progetto E-DNS.",
+                        s7_title: "Clearing & LTS",
+                        s7_api: "Sincronizzazione unidirezionale in ingresso",
+                        s7_items: [
+                            { t: "Flusso finanziario", d: "LTS agisce da intermediario con diritto d'incasso: incassa, trattiene l'8% e liquida alle regioni entro il 10 del mese successivo. DNS e il fornitore non toccano mai il denaro." },
+                            { t: "Sovranità dei dati", d: "Separazione netta: LTS e le regioni conservano l'identità, il fornitore tecnologico riceve solo un codice pseudonimo (Digital Pass ID)." },
+                            { t: "Incognita da negoziare", d: "Non è ancora chiarito se l'accesso alle interfacce tecniche sia compreso nell'8% di commissione. Ininfluente per il test di fattibilità, rilevante a regime." }
+                        ],
+
                         s8_title: "Governance & Tutela",
+                        s8_lead: "Condizioni da fissare prima che venga scritta una riga di codice: dopo diventano difficilissime da cambiare.",
                         s8_items: [
-                            { t: "IP Ownership", d: "DNS detiene la proprietà dei moduli personalizzati e licenza d'uso perpetua sulla piattaforma base." },
-                            { t: "Source Code Escrow", d: "Deposito del codice sorgente presso un ente terzo a garanzia della continuità operativa." },
-                            { t: "Data Portability", d: "Pieno controllo e proprietà dei dati. Export garantito in formati aperti su richiesta." }
+                            { icon: '<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>', t: "Proprietà IP", d: "Sugli sviluppi commissionati da DNS: proprietà oppure licenza perpetua, irrevocabile, trasferibile e senza royalty, che sopravvive alla cessazione. La piattaforma base resta del fornitore." },
+                            { icon: '<path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>', t: "Dati e portabilità", d: "DNS è titolare dei dati, con export completo in formato aperto e documentato in caso di uscita. Sul lato cartografico il punto è già risolto: in Contwise Maps i diritti sui dati restano interamente del cliente, che decide licenze, condivisione e canali." },
+                            { icon: '<path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>', t: "Account store", d: "Gli account App Store e Google Play sono intestati a DNS, con il fornitore come sviluppatore delegato. L'app resta nostra." },
+                            { icon: '<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>', t: "Continuità", d: "Deposito del codice sorgente, notifica in caso di cambio di controllo e tetto ai prezzi: obbligatori per la fase di produzione." }
                         ],
-                        s9_title: "Success Factors Pilota",
+
+                        s9_title: "Cosa deve dimostrare il test",
+                        s9_lead: "Il test di fattibilità serve a rispondere a quattro domande, non a costruire un prodotto.",
                         s9_kpis: [
-                            { icon: '<path d="M5 13l4 4L19 7"/>', t: "App Approval", d: "Approvazione app su iOS/Android per tracciamento in background." },
-                            { icon: '<path d="M12 8v4l3 3"/>', t: "Offline Capacity", d: "Validazione offline del 100% in zone senza copertura." },
-                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Legal Proof", d: "Validazione definitiva del modello di privacy post-pilota." },
-                            { icon: '<path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>', t: "Scaling Readiness", d: "Capacità tecnica di gestire i volumi di rete (77k+ ticket)." }
+                            { icon: '<path d="M5 13l4 4L19 7"/>', t: "Approvazione store", d: "L'app viene approvata su iOS e Android con accesso alla posizione in background? Non è scontato." },
+                            { icon: '<path d="M12 8v4l3 3"/>', t: "Batteria", d: "Il consumo è accettabile per una giornata sugli sci, al freddo? È la variabile che decide tutto." },
+                            { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', t: "Affidabilità geofence", d: "Il rilevamento funziona in condizioni reali: freddo, copertura arborea, terreno effettivo." },
+                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Modello privacy", d: "La pseudonimizzazione regge una volta implementata davvero, non solo sulla carta." }
                         ],
-                        s7_title: "Roadmap Pilota",
-                        s7_loc: "tbd (WS 2026/27)",
-                        s7_stages: [
-                            { t: "Phase 1: Pilot", d: "Test tecnologico e legale con 50 utenti beta in una singola regione." },
-                            { t: "Phase 2: Scale", d: "Roll-out multi-regione e integrazione bidirezionale." },
-                            { t: "Phase 2+: CRM", d: "Account opzionali, loyalty e servizi personalizzati." }
-                        ]
+
+                        s10_title: "Percorso a stadi",
+                        s10_lead: "Una decisione per volta, ognuna piccola e reversibile. Il ritmo lo detta la stagione: uno stadio per inverno.",
+                        s10_loc: "Regione pilota da confermare",
+                        s10_stages: [
+                            { when: "Inverno 2026-27", t: "Stage 0 · Fattibilità", d: "Build minimale su pochi dispositivi: rilevamento geofence, misura batteria, submission agli app store, verifica del modello privacy. Nessuna app rifinita, nessun utente reale. Risultato: un report con misure documentate." },
+                            { when: "Primavera 2027", t: "Valutazione", d: "Analisi dei risultati, risposta alla domanda sui costi di esercizio e, se il quadro regge, preparazione di una candidatura per un finanziamento europeo." },
+                            { when: "Inverno 2027-28", t: "Stage 1 · Beta", d: "Beta con utenti reali: una regione, un tipo di biglietto, circa 50 tester. Solo se lo Stage 0 ha dato esito positivo." },
+                            { when: "Dal 2028", t: "Fase 2 · Produzione", d: "Estensione multi-regione, integrazione bidirezionale e servizi aggiuntivi agganciati al pass." }
+                        ],
+
+                        s11_title: "Il quadro economico",
+                        s11_lead: "Le cifre dell'offerta ricevuta e la domanda che resta aperta prima di impegnarsi sul pieno sviluppo.",
+                        s11_figures: [
+                            { label: "Offerta pilota completo", value: "83.400 €", note: "una tantum, più 13.500 € annui di hosting e manutenzione" },
+                            { label: "Test di fattibilità", value: "15–30.000 €", note: "stima da confermare: è la sola decisione in discussione oggi" },
+                            { label: "Produzione a regime", value: "150–200.000 €", note: "indicativi, più 40–60.000 € annui di esercizio" }
+                        ],
+                        s11_q_title: "La domanda aperta",
+                        s11_q_desc: "Il costo di esercizio a regime è dello stesso ordine di grandezza dell'intera fee variabile del modello FAIR. I fondi europei finanziano lo sviluppo, non l'esercizio. Le risorse non sono nel bilancio DNS ma nel fatturato di rete: 1,89 milioni di euro e 77.462 biglietti nella scorsa stagione.",
+                        s11_floor_title: "Il rischio ha un pavimento",
+                        s11_floor_desc: "Il geofencing non è il fondamento del sistema, ma il piano superiore. Sotto resta un pass digitale funzionante: fine della carta, vendita online, dati utilizzabili. Lo scenario peggiore non è perdere l'investimento, è ottenere meno del massimo."
                     },
+
+                    /* ============================ DEUTSCH ============================ */
                     de: {
                         s1_tag: "Project Scope & Strategy",
                         s1_title: "DNS Digitale <br>Infrastruktur-<span class='text-dns-soft'>Plattform</span>",
-                        s1_desc: "Ziel ist nicht die Digitalisierung des Verkaufs, sondern der Infrastruktur. Eine proprietäre Plattform für intelligente Steuerung und Datensouveränität der Smart Slopes.",
-                        s2_title: "Strategische Architektur",
+                        s1_desc: "Ziel ist nicht die Digitalisierung des Verkaufs, sondern der Infrastruktur. Eine Plattform für intelligente Zugangssteuerung und Datenhoheit der Smart Slopes.",
+
+
+                        sQ_title: "Die heutige Ausgangslage",
+                        sQ_lead: "Bevor wir über Lösungen sprechen, lohnt sich ein Blick darauf, wo wir stehen.",
+                        sQ_points: [
+                            { icon: '<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>', t: "Alles auf Papier", d: "Druck, Verteilung, verstreuter Verkauf an den Verkaufsstellen, manuelle Abrechnung. Eine Arbeit, die sich jede Saison in acht Regionen wiederholt." },
+                            { icon: '<path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>', t: "Wir wissen, was wir verkaufen — nicht, wer läuft", d: "Wir kennen die verkauften Tickets. Wir wissen nicht, wie viele Personen tatsächlich auf der Loipe sind, wann und in welchem Bereich. Netzentscheidungen beruhen auf Schätzungen." },
+                            { icon: '<path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>', t: "Die Kontrolle hält alle an und erfasst wenige", d: "Das Personal muss jede Person anhalten, um ein Stück Papier zu prüfen. Das kostet, bremst den Gast, erzeugt Reibung — und erfasst dennoch nur einen Bruchteil." },
+                            { icon: '<path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>', t: "Flexible Produkte unmöglich", d: "Halbtag, nicht zusammenhängende Mehrtagespässe, Nebensaisontarife: auf Papier nicht handhabbar. Das Angebot bleibt starr, weil das Instrument starr ist." }
+                        ],
+                        sQ_root: "Der strukturelle Grund ist ein einziger: <strong class='text-dns-soft'>Die Loipen kosten täglich Pflege, doch der Zugang ist faktisch nicht kontrollierbar.</strong> Das ist kein DNS-Problem — es ist das Problem jeder Outdoor-Infrastruktur ohne Drehkreuze.",
+
+                        sD_title: "Die Entscheidung",
+                        sD_lead: "Worum der Vorstand heute gebeten wird — und worum ausdrücklich nicht.",
+                        sD_yes_label: "Heute zu entscheiden",
+                        sD_amount: "Stufe 0 · max. 30.000 €",
+                        sD_yes: "Der technische Machbarkeitstest in diesem Winter: wenige Geräte, belastbare Messwerte, keine echten Nutzer. Das endgültige Angebot wird erwartet und ersetzt diese Obergrenze.",
+                        sD_no_label: "Heute nicht zu entscheiden",
+                        sD_no: [
+                            "Die Beta mit echten Nutzern: darüber wird im Frühjahr 2027 anhand der Ergebnisse entschieden",
+                            "Der Vollausbau und seine 150.000–200.000 €",
+                            "Keine Festlegung auf den Anbieter für die weiteren Stufen",
+                            "Keine Festlegung auf laufende Kosten, solange nicht geklärt ist, wer sie trägt"
+                        ],
+                        sD_need_label: "Was über das Budget hinaus nötig ist",
+                        sD_need: [
+                            "Ein klares Verhandlungsmandat darüber, was mit dem Anbieter vereinbart werden darf",
+                            "Die Anerkennung, dass dies ein mehrjähriger Weg ist und keine Saisonentscheidung",
+                            "Eine zweite Bezugsperson neben der Geschäftsführung: heute ruht das Projekt auf einer einzigen",
+                            "Die Bestätigung der Pilotregion"
+                        ],
+                        sD_risk_label: "Wird jetzt nicht entschieden",
+                        sD_risk: "Der Test braucht reale Winterbedingungen: Kälte, Baumbestand, echtes Gelände. Wird das Fenster dieses Winters verpasst, verschiebt sich die Überprüfung um ein volles Jahr — und mit ihr jede weitere Entscheidung.",
+                        s2_title: "Föderierte Architektur",
                         s2_layers: [
-                            { icon: '<path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5"/>', title: "1. Commerce", desc: "Verwaltet über LTS TIC-Web. Verkauf und Einnahmen verbleiben bei den Regionen." },
-                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', title: "2. Identität", desc: "Pseudonymisierter Pass von PRIOT. Strikte Trennung zwischen Identität und Zutrittsrecht." },
-                            { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', title: "3. Infrastruktur", desc: "Geofencing und Sitzung. GPS nur während der Sitzung aktiv." },
-                            { icon: '<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2"/>', title: "4. Intelligence", desc: "Aggregierte Analytics und Destination Intelligence für datenbasierte Entscheidungen." }
+                            { icon: '<path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5"/>', title: "1. Commerce", owner: "LTS · Regionen", desc: "Über LTS TIC-Web verwaltet. Verkauf, Inkasso und MwSt. bleiben bei den Regionen. Der Technologiepartner berührt den Zahlungsfluss nie." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', title: "2. Identität", owner: "Technologiepartner", desc: "Pseudonymisierter Digital Pass. Strikte Trennung zwischen Identität — die bei LTS und den Regionen bleibt — und Zutrittsrecht." },
+                            { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', title: "3. Infrastruktur", owner: "DNS · General Solutions", desc: "Geofencing und Infrastruktur-Sitzung. Die Geometrie der Grenzen wird aus den GPX-Daten der Regionen von General Solutions auf der Plattform Contwise Maps erzeugt und über eine GeoJSON-Schnittstelle bereitgestellt. Sie bleibt außerhalb des Stacks des Ticketing-Anbieters." },
+                            { icon: '<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2"/>', title: "4. Intelligence", owner: "DNS Datenhoheit", desc: "Aggregierte Analytics und Destination Intelligence für Netzentscheidungen auf Basis realer Frequenzdaten." }
                         ],
-                        s3_title: "Ticket-Lebenszyklus",
+
+                        s3_title: "Lebenszyklus / Sitzung",
+                        s3_stepword: "Schritt",
                         s3_steps: [
-                            { icon: '<path d="M3 3h18v18H3zM3 9h18"/>', label: "Kauf", detail: "Online-Kauf via LTS. Einnahmen bleiben bei den Regionen." },
-                            { icon: '<path d="M12 2v20M2 12h20"/>', label: "Ankunft", detail: "Nutzer kommt an. App ist bereit." },
-                            { icon: '<path d="M11 19l-7-7 7-7"/>', label: "Eintritt", detail: "Eintritt wird lautlos erkannt." },
-                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', label: "Sitzung", detail: "Infrastruktur-Sitzung startet. GPS aktiv." },
-                            { icon: '<path d="M13 5l7 7-7 7"/>', label: "Austritt", detail: "Sitzung endet automatisch." },
-                            { icon: '<path d="M5 3v18l15-9z"/>', label: "Ende", detail: "Anonymisierte Daten per Statistiken." }
+                            { icon: '<path d="M3 3h18v18H3zM3 9h18"/>', label: "Kauf", detail: "Online-Kauf über LTS. Die Einnahmen bleiben bei den Regionen, das System erhält nur das Verkaufsereignis." },
+                            { icon: '<path d="M12 2v20M2 12h20"/>', label: "Ankunft", detail: "Der Gast kommt im Gebiet an, der Pass ist bereits in der App hinterlegt." },
+                            { icon: '<path d="M11 19l-7-7 7-7"/>', label: "Eintritt", detail: "Das Betreten des Geofence wird erkannt und bereitet die Sitzung vor." },
+                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', label: "Sitzung", detail: "Die Infrastruktur-Sitzung öffnet sich: Sie begrenzt rechtlich die Verarbeitung der Standortdaten." },
+                            { icon: '<path d="M13 5l7 7-7 7"/>', label: "Austritt", detail: "Beim Verlassen des Gebiets endet die Sitzung automatisch — Datenschutz und Akkuschonung." },
+                            { icon: '<path d="M5 3v18l15-9z"/>', label: "Ende", detail: "Bestätigte Daten werden anonymisiert für die Netzstatistik aggregiert." }
                         ],
+
+
+                        sT_title: "Der Pass und die Wahlfreiheit",
+                        sT_lead: "Der Code ist einer, den Träger wählt der Gast. Die Validierung funktioniert in allen Fällen — nur die Art unterscheidet sich.",
+                        sT_carriers: [
+                            { icon: '<path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>', t: "DNS-App", who: "Saison- und Wochenpässe", d: "Für alle, die mehr wollen: automatischer Sitzungsstart, Kontrolle ohne Anhalten, persönliche Statistiken und künftig Zusatzdienste rund um den Pass." },
+                            { icon: '<path d="M3 10h18M7 15h.01M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>', t: "Digitale Wallet", who: "Wer keine App will", d: "Der QR-Code in der Wallet des Telefons, wie jedes andere Ticket. Keine App, kein GPS, keine Ortung. Das Kontrollpersonal hält an und scannt." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', t: "Bestehende Gästekarten", who: "Gäste · spätere Stufe", d: "Der Pass läuft auf einem Träger, den der Gast bereits hat. Erfordert eine Vereinbarung mit dem Kartenbetreiber: Perspektive, nicht Pilot." }
+                        ],
+                        sT_freedom: "<strong class='text-dns-soft'>Niemand muss Ortung akzeptieren, um Langlaufen zu gehen.</strong> Das GPS ist das, was man im Tausch gegen Komfort erhält — Kontrolle ohne Anhalten, Statistiken, Dienste — keine Zugangsvoraussetzung. In beiden Fällen validiert das Kontrollpersonal.",
+
+                        sO_title: "Was sich öffnet",
+                        sO_lead: "Kein neues Projekt, sondern die nächste Ebene von E-DNS: dasselbe Netz, dieselben Partner, dieselbe Karte. Darauf setzen wir Zugang und Daten.",
+                        sO_chain: [
+                            { step: "Erledigt", t: "E-DNS", d: "Gemeinsame Karte und Kommunikation der acht Regionen." },
+                            { step: "Jetzt", t: "Smart Slopes", d: "Digitaler Zugang und reale Nutzungsdaten auf derselben Karte." },
+                            { step: "Danach", t: "Services", d: "Mehrwert für den Gast und Einnahmen für die Regionen auf demselben Pass." }
+                        ],
+                        sO_groups: [
+                            { tag: "Sofort · nahezu sicher", t: "Innerhalb des Netzes", points: [
+                                "Ende der Papierkarte: Druck, Verteilung, Abrechnung",
+                                "Reale Nutzungsdaten je Region: das FAIR-Modell auf Messwerten statt Schätzungen",
+                                "Schnellere, konfliktärmere Kontrolle: angehalten wird nur, wer nicht erscheint",
+                                "Sicherheit: in Echtzeit wissen, dass jemand auf der Loipe ist"
+                            ]},
+                            { tag: "Plausibel · hier liegt das Geld", t: "Einnahmen für die Regionen", points: [
+                                "Produkte, die auf Papier unmöglich sind: Halbtag, Multi-Day, Nebensaison, erste Spur",
+                                "Dienste am Pass: Schließfächer, Verleih, Skischule, Gastronomie",
+                                "Die Einnahmen bleiben bei Region und lokalem Partner, DNS liefert die technische Grundlage",
+                                "Sommererweiterung, wo eine Leistung erkennbar ist: gepflegte Trails, keine freien Wanderwege"
+                            ]},
+                            { tag: "Strategisch · aufzubauen", t: "Rückfluss für DNS", points: [
+                                "DNS verkauft keine Software und kassiert nicht aus Tickets: dafür fehlen Struktur und Rolle",
+                                "Was DNS besitzt, ist der Entwurf des Systems",
+                                "Wird der Entwurf außerhalb des Netzes wiederverwendet, beteiligt sich DNS über eine Quote oder Vorzugskonditionen",
+                                "Übertragbarkeit ist genau das, was europäische Programme fördern"
+                            ]}
+                        ],
+                        sO_bridge: "Das ist der Weg zur Eigenfinanzierung des Systems, keine garantierte Einnahme. <strong class='text-dns-soft'>Zur Größenordnung: Die jährlichen Betriebskosten entsprechen bei den heutigen Netzvolumina einem Beitrag von weniger als einem Euro je Pass.</strong> Die Kosten der nächsten Seite bleiben zu decken — aber erstmals gibt es einen Mechanismus, der sie decken kann.",
+                        sO_note_label: "Eine notwendige Klarstellung",
+                        sO_note: "DNS legt keine Preise fest, zentralisiert keine Einnahmen und verkauft nicht an den Endgast. Ein etwaiger Rückfluss an DNS entsteht ausschließlich aus der Wiederverwendung des Entwurfs außerhalb des Netzes.",
                         s4_title: "Operatives Geofencing",
+                        s4_badge_on: "Sitzung aktiv",
+                        s4_badge_off: "Keine Verarbeitung",
+                        s4_note: "Die Geometrie der Grenzen kommt von General Solutions · Contwise Maps und ändert sich nie automatisch",
                         s4_points: [
-                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', t: "Auto-Aktivierung", d: "Sitzung startet und endet beim Betreten/Verlassen." },
-                            { icon: '<path d="M12 8v4l3 3"/>', t: "Akkuschonung", d: "Optimiertes Sampling für kalte Umgebungen." },
-                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Rechtsgrundlage", d: "Rahmen für die Datenverarbeitung." }
+                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', t: "Automatische Aktivierung", d: "Die Sitzung öffnet und schließt beim Betreten und Verlassen des Perimeters. Der Gast muss nichts tun." },
+                            { icon: '<path d="M12 8v4l3 3"/>', t: "Akkuverbrauch", d: "Die kritische Messgröße: Das Sampling muss für Kälte und lange Tage optimiert werden." },
+                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Rechtsgrundlage", d: "Die Sitzung begrenzt den rechtlichen Rahmen der Standortdatenverarbeitung." },
+                            { icon: '<path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>', t: "Geometrie aus Contwise Maps", d: "Die Polygone werden aus den GPX-Daten der Regionen von General Solutions auf Contwise Maps erzeugt und über eine bereits bestehende GeoJSON-Schnittstelle bereitgestellt, zusammen mit dem Präparierungsstand in Echtzeit. Sie bleiben bei DNS und den Regionen." }
                         ],
-                        s5_title: "Ticket Control",
+
+                        s5_title: "Assistierte Kontrolle",
+                        s5_lead: "Der Geofence ist kein automatisches Drehkreuz: Er begründet eine Anwesenheitsvermutung. Der offizielle Datensatz entsteht erst durch die Bestätigung des Kontrollpersonals.",
+                        s5_device: "Kontrollansicht · aktive Pässe in der Nähe",
                         s5_features: [
-                            { icon: '<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>', t: "Echtzeit-Radar", d: "Identifizierung von GPS-Punkten mit aktivem Ticket." },
-                            { icon: '<path d="M12 4v1m6 11h2"/>', t: "QR-Fallback", d: "Manueller Scan bei Bedarf." }
+                            { icon: '<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>', t: "Vermutung", d: "Das System zeigt aktive Pässe im Gebiet an. Das ist ein Hinweis, noch keine Validierung." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', t: "Menschliche Bestätigung", d: "Das Kontrollpersonal steht an einer Engstelle der Loipe und bestätigt in der App. Erst dann wird der Datensatz offiziell." },
+                            { icon: '<path d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z"/>', t: "Fehlalarme irrelevant", d: "Wer sich im Gebiet aufhält, ohne Ski zu laufen, wird nie bestätigt: keine falsche Belastung, auch bei weitem Geofence." },
+                            { icon: '<path d="M12 4v1m6 11h2M4 16H2m14.24-6.24l1.42-1.42M6.34 9.76L4.92 8.34"/>', t: "QR-Rückfallebene", d: "Ohne Netz oder bei Verzicht auf Ortung bleibt die Offline-Kontrolle per QR-Code." },
+                            { icon: '<path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 9v1m0-9c-1.11 0-2.08.402-2.599 1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>', t: "Verkauf auf der Loipe", d: "Findet das Kontrollpersonal jemanden ohne Pass, wird dieser vom selben Telefon aus ausgestellt und kassiert — Zahlung per Link über die bestehende Verkaufsplattform, Bargeld als Offline-Rückfallebene. Der Preis vor Ort enthält einen Aufschlag, den die Region festlegt." }
                         ],
-                        s6_title: "LTS & Clearing",
-                        s6_clearing: "LTS fungiert als Merchant of Record: Inkasso, 8% Gebühr e Auszahlung an Regionen.",
-                        s6_privacy: "Strikte Trennung: LTS verwaltet Identität, PRIOT verwaltet pseudonyme IDs.",
-                        s8_title: "Governance & Schutz",
+
+                        s6_title: "Kein Experiment",
+                        s6_lead: "Die einzelnen Bausteine sind anderswo im Regelbetrieb. Neu ist ihre Kombination und die Anwendung auf eine Infrastruktur ohne Drehkreuze.",
+                        s6_proofs: [
+                            { icon: '<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>', t: "Digitaler Pass", where: "Schweiz · seit 2017/18", d: "Rund 120 Loipenorganisationen nutzen einen digitalen Pass mit Kontrolle durch Aufsichtspersonal." },
+                            { icon: '<path d="M5 12h14M12 5l7 7-7 7"/>', t: "Digitales Ticketing", where: "Trentino · seit 2022", d: "Ein Langlaufzentrum in unserer Nähe nutzt digitales Ticketing, allerdings mit RFID-Hardware — dem Ansatz, den wir bewusst nicht wählen." },
+                            { icon: '<path d="M12 2a10 10 0 100 20 10 10 0 000-20zM2 12h20M12 2a15 15 0 010 20 15 15 0 010-20z"/>', t: "Geofence als Auslöser", where: "7 EU-Länder · über 10 Jahre", d: "Die satellitengestützte LKW-Maut rechnet beim Passieren virtueller Grenzen ab, ganz ohne Infrastruktur am Straßenrand." }
+                        ],
+                        s6_conclusion: "Der alpine Skisport hat den bezahlten Zugang über <strong>Drehkreuze an den Liften</strong> gelöst. Alles ohne physischen Engpass — Loipen, gepflegte Trails, betreute Naturräume — hatte bisher keine Antwort. <strong class='text-dns-soft'>Genau dort setzt unser Ansatz an.</strong>",
+
+
+                        sP_title: "Der Technologiepartner",
+                        sP_lead: "Wer das System umsetzen würde — und warum gerade sie.",
+                        sP_who_label: "Wer sie sind",
+                        sP_company: "PRIOT Digital Systems",
+                        sP_company_desc: "Maribor, Slowenien. Web- und IoT-Plattformen für Sport- und Tourismusinfrastruktur.",
+                        sP_ref_label: "Referenz",
+                        sP_ref_name: "Nordic Center Planica",
+                        sP_ref_desc: "Saison- und Tagespässe mit RFID-Chip und QR-Code auf Karten und Aufklebern, kontaktlose Validierung über ein tragbares Lesegerät — ohne die Gäste anzuhalten — sowie Zeiterfassung für Athletinnen und Athleten.",
+                        sP_knowhow: [
+                            { icon: '<path d="M12 2l3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6L3 9l6-1z"/>', t: "Erfahrung im nordischen Bereich", d: "Kein Generalist: Planica ist ein Langlaufzentrum mit denselben Zugangs- und Publikumsdynamiken wie unsere Gebiete." },
+                            { icon: '<path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>', t: "Bestehende Plattform", d: "Sie fangen nicht bei null an, sondern nutzen ihr eigenes Ticketing- und Tracking-System. Das erklärt den moderaten Preis — und zugleich, warum die Vertragsbedingungen so wichtig sind." },
+                            { icon: '<path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.9 9.9 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>', t: "Der hardwarefreie Ansatz kam von ihnen", d: "Nach unseren Anforderungen haben sie den eigenen RFID-Ansatz zurückgestellt und den rein digitalen Weg vorgeschlagen. Ein Zeichen von Zuhören, nicht von Verkauf." },
+                            { icon: '<path d="M4 20h4v-4H4v4zm6 0h4V10h-4v10zm6 0h4V4h-4v16z"/>', t: "Bereitschaft zum stufenweisen Vorgehen", d: "Bereits im Juni haben sie selbst vorgeschlagen, mit einem kleinen Technologietest zu beginnen, bevor ein volles Pilotprojekt beauftragt wird." }
+                        ],
+                        sP_second: "Zweiter Technologiepartner: <strong>General Solutions · Contwise Maps</strong> — bereits Partner von DNS und den acht Regionen im Projekt E-DNS.",
+                        s7_title: "Clearing & LTS",
+                        s7_api: "Unidirektionale eingehende Synchronisation",
+                        s7_items: [
+                            { t: "Zahlungsfluss", d: "LTS agiert als Vermittler mit Inkassorecht: kassiert, behält 8 % ein und zahlt bis zum 10. des Folgemonats an die Regionen aus. DNS und der Anbieter berühren das Geld nie." },
+                            { t: "Datenhoheit", d: "Strikte Trennung: LTS und die Regionen halten die Identität, der Technologiepartner erhält nur einen pseudonymen Code (Digital Pass ID)." },
+                            { t: "Zu verhandeln", d: "Noch offen ist, ob der Zugang zu den technischen Schnittstellen in den 8 % Provision enthalten ist. Für den Machbarkeitstest unerheblich, im Vollbetrieb relevant." }
+                        ],
+
+                        s8_title: "Governance & Absicherung",
+                        s8_lead: "Bedingungen, die vor der ersten Zeile Code zu klären sind — danach lassen sie sich kaum noch ändern.",
                         s8_items: [
-                            { t: "IP Eigentum", d: "DNS possiede foreground IP. Unbefristete Lizenz." },
-                            { t: "Quellcode Escrow", d: "Hinterlegung des Quellcodes." },
-                            { t: "Datenhoheit", d: "DNS besitzt alle Daten. Offener Export." }
+                            { icon: '<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>', t: "IP-Eigentum", d: "Für von DNS beauftragte Entwicklungen: Eigentum oder eine unbefristete, unwiderrufliche, übertragbare und lizenzgebührenfreie Lizenz, die die Vertragsbeendigung überdauert. Die Kernplattform bleibt beim Anbieter." },
+                            { icon: '<path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>', t: "Daten & Portabilität", d: "DNS ist Eigentümerin der Daten, mit vollständigem Export in einem offenen, dokumentierten Format im Falle eines Ausstiegs. Auf kartografischer Seite ist der Punkt bereits gelöst: Bei Contwise Maps verbleiben die Datenrechte vollständig beim Kunden, der über Lizenzen, Weitergabe und Kanäle entscheidet." },
+                            { icon: '<path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>', t: "Store-Konten", d: "Die App-Store- und Google-Play-Konten laufen auf DNS, der Anbieter arbeitet als beauftragter Entwickler. Die App bleibt unsere." },
+                            { icon: '<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>', t: "Kontinuität", d: "Quellcode-Hinterlegung, Meldepflicht bei Kontrollwechsel und Preisdeckelung: verbindlich für die Produktionsphase." }
                         ],
-                        s9_title: "Erfolgsfaktoren Pilot",
+
+                        s9_title: "Was der Test beweisen muss",
+                        s9_lead: "Der Machbarkeitstest dient dazu, vier Fragen zu beantworten — nicht dazu, ein Produkt zu bauen.",
                         s9_kpis: [
-                            { icon: '<path d="M5 13l4 4L19 7"/>', t: "App Approval", d: "Zulassung für iOS/Android." },
-                            { icon: '<path d="M12 8v4l3 3"/>', t: "Offline-Check", d: "100% Validierung senza Netz." },
-                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Legal Proof", d: "Validierung Datenschutzmodell." },
-                            { icon: '<path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>', t: "Skalierung", d: "Handling von 77k+ Tickets." }
+                            { icon: '<path d="M5 13l4 4L19 7"/>', t: "Store-Zulassung", d: "Wird die App auf iOS und Android mit Standortzugriff im Hintergrund zugelassen? Das ist keineswegs selbstverständlich." },
+                            { icon: '<path d="M12 8v4l3 3"/>', t: "Akku", d: "Ist der Verbrauch für einen Skitag bei Kälte vertretbar? Das ist die Variable, die alles entscheidet." },
+                            { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', t: "Zuverlässigkeit", d: "Funktioniert die Erkennung unter realen Bedingungen: Kälte, Baumbestand, tatsächliches Gelände." },
+                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Datenschutzmodell", d: "Hält die Pseudonymisierung stand, wenn sie tatsächlich umgesetzt ist — nicht nur auf dem Papier." }
                         ],
-                        s7_title: "Roadmap WS 26/27",
-                        s7_loc: "Gsiesertal (WS 2026/27)",
-                        s7_stages: [
-                            { t: "Phase 1: Pilot", d: "Technischer Test mit 50 Beta-Nutzern." },
-                            { t: "Phase 2: Scale", d: "Multi-Regionen Roll-out." },
-                            { t: "Phase 2+: CRM", d: "Konten und Loyalty." }
-                        ]
+
+                        s10_title: "Stufenweiser Weg",
+                        s10_lead: "Eine Entscheidung nach der anderen, jede klein und umkehrbar. Den Rhythmus gibt die Saison vor: eine Stufe pro Winter.",
+                        s10_loc: "Pilotregion noch zu bestätigen",
+                        s10_stages: [
+                            { when: "Winter 2026-27", t: "Stufe 0 · Machbarkeit", d: "Minimaler Aufbau auf wenigen Geräten: Geofence-Erkennung, Akkumessung, Einreichung in den App-Stores, Prüfung des Datenschutzmodells. Keine fertige App, keine echten Nutzer. Ergebnis: ein Bericht mit belastbaren Messwerten." },
+                            { when: "Frühjahr 2027", t: "Auswertung", d: "Analyse der Ergebnisse, Antwort auf die Frage der laufenden Kosten und, sofern das Bild trägt, Vorbereitung eines europäischen Förderantrags." },
+                            { when: "Winter 2027-28", t: "Stufe 1 · Beta", d: "Beta mit echten Nutzern: eine Region, ein Tarif, rund 50 Testpersonen. Nur wenn Stufe 0 erfolgreich war." },
+                            { when: "Ab 2028", t: "Phase 2 · Produktion", d: "Ausweitung auf mehrere Regionen, bidirektionale Integration und Zusatzdienste rund um den Pass." }
+                        ],
+
+                        s11_title: "Der wirtschaftliche Rahmen",
+                        s11_lead: "Die Zahlen des vorliegenden Angebots und die Frage, die vor einer Entscheidung über den Vollausbau offen bleibt.",
+                        s11_figures: [
+                            { label: "Angebot Vollpilot", value: "83.400 €", note: "einmalig, zuzüglich 13.500 € jährlich für Hosting und Wartung" },
+                            { label: "Machbarkeitstest", value: "15.000–30.000 €", note: "Schätzung, noch zu bestätigen: die einzige heute zu treffende Entscheidung" },
+                            { label: "Vollausbau", value: "150.000–200.000 €", note: "indikativ, zuzüglich 40.000–60.000 € jährlich im Betrieb" }
+                        ],
+                        s11_q_title: "Die offene Frage",
+                        s11_q_desc: "Die laufenden Betriebskosten liegen in derselben Größenordnung wie die gesamte variable Fee des FAIR-Modells. Fördermittel finanzieren die Entwicklung, nicht den Betrieb. Die Mittel liegen nicht im DNS-Haushalt, sondern im Netzumsatz: 1,89 Mio. Euro und 77.462 Tickets in der vergangenen Saison.",
+                        s11_floor_title: "Das Risiko ist nach unten begrenzt",
+                        s11_floor_desc: "Das Geofencing ist nicht das Fundament des Systems, sondern die Ausbaustufe darauf. Darunter bleibt ein funktionierender digitaler Pass: das Ende der Papierkarte, Online-Verkauf, verwertbare Daten. Das ungünstigste Szenario ist nicht der Verlust der Investition, sondern ein bescheideneres Ergebnis."
                     },
+
+                    /* ============================ ENGLISH ============================ */
                     en: {
                         s1_tag: "Project Scope & Strategy",
                         s1_title: "DNS Digital <br>Infrastructure <span class='text-dns-soft'>Platform</span>",
-                        s1_desc: "The goal is not to digitize sales, but the infrastructure. A proprietary platform for control and data sovereignty of Smart Slopes.",
-                        s2_title: "Strategic Architecture",
-                        s3_title: "Ticket Lifecycle",
-                        s4_title: "Operational Geofencing",
-                        s5_title: "Ticket Control",
-                        s6_title: "Clearing & Finance",
-                        s8_title: "Governance & Protection",
-                        s9_title: "Pilot Success Factors",
-                        s7_title: "Pilot Roadmap",
-                        s7_loc: "tbd (WS 2026/27)",
+                        s1_desc: "The goal is not to digitise sales, but the infrastructure itself. A platform for intelligent access control and data sovereignty across the Smart Slopes.",
+
+
+                        sQ_title: "The Problem Today",
+                        sQ_lead: "Before talking about solutions, it is worth looking at where we start from.",
+                        sQ_points: [
+                            { icon: '<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>', t: "Everything on paper", d: "Printing, distribution, fragmented sales across outlets, manual reconciliation. Work that repeats every season across eight regions." },
+                            { icon: '<path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>', t: "We know what we sell, not who skis", d: "We know the tickets sold. We do not know how many people are actually on the tracks, when, or in which area. Network decisions rest on estimates." },
+                            { icon: '<path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>', t: "Control stops everyone and catches few", d: "Staff must stop every person to check a piece of paper. It is costly, slows the guest, creates friction — and still catches only a fraction." },
+                            { icon: '<path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>', t: "Flexible products impossible", d: "Half-day, non-consecutive multi-day, low-season rates: unmanageable on paper. The offer stays rigid because the instrument is rigid." }
+                        ],
+                        sQ_root: "There is one structural reason: <strong class='text-dns-soft'>the tracks cost money to groom every day, yet access is effectively impossible to control.</strong> This is not a DNS problem — it is the problem of all outdoor infrastructure without turnstiles.",
+
+                        sD_title: "The Decision",
+                        sD_lead: "What the Board is being asked today — and what it is expressly not being asked.",
+                        sD_yes_label: "Decided today",
+                        sD_amount: "Stage 0 · max €30,000",
+                        sD_yes: "The technical feasibility test this winter: a handful of devices, measured findings, no real users. The final quote is expected and will replace this ceiling.",
+                        sD_no_label: "Not decided today",
+                        sD_no: [
+                            "The beta with real users: decided in spring 2027, on the results",
+                            "The full build and its €150,000–200,000",
+                            "No commitment to the vendor for the later stages",
+                            "No commitment on running costs until it is clear who carries them"
+                        ],
+                        sD_need_label: "What is needed beyond the budget",
+                        sD_need: [
+                            "A clear negotiating mandate on what may be agreed with the vendor",
+                            "Recognition that this is a multi-year path, not a seasonal decision",
+                            "A second point of reference alongside management: today the project rests on one person",
+                            "Confirmation of the pilot region"
+                        ],
+                        sD_risk_label: "If it is not decided now",
+                        sD_risk: "The test needs real winter conditions: cold, tree cover, actual terrain. If this winter's window is missed, verification slips a full year — and with it every decision that follows.",
+                        s2_title: "Federated Architecture",
                         s2_layers: [
-                            { icon: '<path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5"/>', title: "1. Commerce", desc: "Managed by LTS. Sales and VAT remain with regions. PRIOT does not touch funds." },
-                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', title: "2. Identity", desc: "Pseudonymized pass by PRIOT. Sharp split between identity and access rights." },
-                            { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', title: "3. Infrastructure", desc: "Geofencing and session. GPS active only on tracks." },
-                            { icon: '<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2"/>', title: "4. Intelligence", desc: "Aggregated analytics for network decisions." }
+                            { icon: '<path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5"/>', title: "1. Commerce", owner: "LTS · Regions", desc: "Managed through LTS TIC-Web. Sales, collection and VAT stay with the regions. The technology partner never touches the payment flow." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', title: "2. Identity", owner: "Technology partner", desc: "Pseudonymised Digital Pass. A sharp split between identity — which stays with LTS and the regions — and the right of access." },
+                            { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', title: "3. Infrastructure", owner: "DNS · General Solutions", desc: "Geofencing and Infrastructure Session. The boundary geometry is generated from the regions' GPX data by General Solutions on the Contwise Maps platform and served through a GeoJSON interface. It stays outside the ticketing vendor's stack." },
+                            { icon: '<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2"/>', title: "4. Intelligence", owner: "DNS Sovereignty", desc: "Aggregated analytics and Destination Intelligence for network decisions based on real visitor-flow data." }
                         ],
+
+                        s3_title: "Lifecycle / Session",
+                        s3_stepword: "Step",
                         s3_steps: [
-                            { icon: '<path d="M3 3h18v18H3zM3 9h18"/>', label: "Purchase", detail: "Online purchase via LTS. Revenue stays with regions." },
-                            { icon: '<path d="M12 2v20M2 12h20"/>', label: "Arrival", detail: "User arrives. App is ready." },
-                            { icon: '<path d="M11 19l-7-7 7-7"/>', label: "Entry", detail: "Entry detected to prepare activation." },
-                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', label: "Session", detail: "Session active. GPS monitors presence." },
-                            { icon: '<path d="M13 5l7 7-7 7"/>', label: "Exit", detail: "Session closes automatically." },
-                            { icon: '<path d="M5 3v18l15-9z"/>', label: "End", detail: "Anonymous data aggregated." }
+                            { icon: '<path d="M3 3h18v18H3zM3 9h18"/>', label: "Purchase", detail: "Online purchase through LTS. Revenue stays with the regions; the system only receives the sales event." },
+                            { icon: '<path d="M12 2v20M2 12h20"/>', label: "Arrival", detail: "The guest arrives in the area with the pass already loaded in the app." },
+                            { icon: '<path d="M11 19l-7-7 7-7"/>', label: "Entry", detail: "Entry into the geofence is detected and prepares the session to open." },
+                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', label: "Session", detail: "The Infrastructure Session opens: it legally delimits the processing of location data." },
+                            { icon: '<path d="M13 5l7 7-7 7"/>', label: "Exit", detail: "On leaving the area the session closes automatically — privacy and battery life." },
+                            { icon: '<path d="M5 3v18l15-9z"/>', label: "End", detail: "Confirmed data is aggregated anonymously for network statistics." }
                         ],
+
+
+                        sT_title: "The Pass and Freedom of Choice",
+                        sT_lead: "One code, and the guest chooses the carrier. Validation works in every case — only the method differs.",
+                        sT_carriers: [
+                            { icon: '<path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>', t: "DNS app", who: "Season and weekly passes", d: "For those who want the rest: automatic session start, validation without stopping, personal statistics and, later, services attached to the pass." },
+                            { icon: '<path d="M3 10h18M7 15h.01M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>', t: "Digital wallet", who: "Those who don't want the app", d: "The QR code in the phone wallet, like any other ticket. No app, no GPS, no tracking. The controller stops and scans." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', t: "Existing guest cards", who: "Visitors · later stage", d: "The pass travels on a carrier the guest already holds. Requires agreement with the card operator: a prospect, not a pilot item." }
+                        ],
+                        sT_freedom: "<strong class='text-dns-soft'>Nobody has to accept tracking in order to go skiing.</strong> GPS is what you receive in exchange for convenience — validation without stopping, statistics, services — not a condition of access. In both cases the controller performs the validation.",
+
+                        sO_title: "What It Opens Up",
+                        sO_lead: "Not a new project, but the next layer of E-DNS: same network, same partners, same map. On top of it we add access and data.",
+                        sO_chain: [
+                            { step: "Done", t: "E-DNS", d: "Shared map and communication across the eight regions." },
+                            { step: "Now", t: "Smart Slopes", d: "Digital access and real usage data on the same map." },
+                            { step: "Next", t: "Services", d: "Value for the guest and revenue for the regions on the same pass." }
+                        ],
+                        sO_groups: [
+                            { tag: "Immediate · near certain", t: "Inside the network", points: [
+                                "The end of paper: printing, distribution, reconciliation",
+                                "Real usage data per region: the FAIR model fed by measurement rather than estimates",
+                                "Faster, less confrontational control: only those who don't appear are stopped",
+                                "Safety: knowing in real time that someone is on the track"
+                            ]},
+                            { tag: "Plausible · this is where the money is", t: "Revenue for the regions", points: [
+                                "Products impossible on paper: half-day, multi-day, low season, first tracks",
+                                "Services attached to the pass: lockers, rental, ski school, hospitality",
+                                "Revenue stays with the region and the local partner; DNS provides the technical capability",
+                                "Summer extension where a service exists: maintained trails, not free-access footpaths"
+                            ]},
+                            { tag: "Strategic · to be built", t: "Return for DNS", points: [
+                                "DNS does not sell software and does not take revenue from tickets: it has neither the structure nor the role",
+                                "What DNS owns is the design of the system",
+                                "If the design is reused outside the network, DNS participates through a share or preferential terms",
+                                "Replicability is precisely what European programmes fund"
+                            ]}
+                        ],
+                        sO_bridge: "This is the route towards the system paying for itself, not a guaranteed revenue. <strong class='text-dns-soft'>For scale: the annual running cost is equivalent to a contribution of less than one euro per pass at the network's current volumes.</strong> The costs on the next slide remain to be covered — but for the first time there is a mechanism that could cover them.",
+                        sO_note_label: "A necessary clarification",
+                        sO_note: "DNS does not set prices, does not centralise revenue and does not sell to the end guest. Any return to DNS arises solely from reuse of the design outside the network.",
+                        s4_title: "Operational Geofencing",
+                        s4_badge_on: "Session active",
+                        s4_badge_off: "No processing",
+                        s4_note: "The boundary geometry comes from General Solutions · Contwise Maps and never changes automatically",
                         s4_points: [
-                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', t: "Auto-Activation", d: "GPS window opens and closes at perimeter." },
-                            { icon: '<path d="M12 8v4l3 3"/>', t: "Battery Care", d: "Optimized for cold weather usage." },
-                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Legal Basis", d: "Perimeter for GPS data processing." }
+                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', t: "Automatic activation", d: "The session opens and closes on entering and leaving the perimeter. The guest does nothing." },
+                            { icon: '<path d="M12 8v4l3 3"/>', t: "Battery consumption", d: "The critical variable to measure: sampling must be optimised for cold weather and long days." },
+                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Legal basis", d: "The session delimits the legal perimeter for processing location data." },
+                            { icon: '<path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>', t: "Geometry from Contwise Maps", d: "Polygons are generated from the regions' GPX data by General Solutions on the Contwise Maps platform and served through an existing GeoJSON interface, together with real-time grooming status. They remain with DNS and the regions." }
                         ],
+
+                        s5_title: "Controller-Assisted Validation",
+                        s5_lead: "The geofence is not an automatic turnstile: it establishes a presumption of presence. The official record is created when the controller confirms.",
+                        s5_device: "Controller view · active passes nearby",
                         s5_features: [
-                            { icon: '<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>', t: "Real-time Identify", d: "Radar identifies valid rights via GPS." },
-                            { icon: '<path d="M12 4v1m6 11h2"/>', t: "QR Fallback", d: "Manual scan for offline users." }
+                            { icon: '<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>', t: "Presumption", d: "The system flags active passes in the area. That is an indication, not yet a validation." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', t: "Human confirmation", d: "The controller, standing at a natural chokepoint on the track, confirms in the app. Only then does the record become official." },
+                            { icon: '<path d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z"/>', t: "False positives don't matter", d: "Someone inside the area who isn't skiing is never confirmed: no wrongful charge, even with a wide geofence." },
+                            { icon: '<path d="M12 4v1m6 11h2M4 16H2m14.24-6.24l1.42-1.42M6.34 9.76L4.92 8.34"/>', t: "QR fallback", d: "Where there is no signal, or for guests who decline location, offline QR checking remains." },
+                            { icon: '<path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 9v1m0-9c-1.11 0-2.08.402-2.599 1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>', t: "Selling on the track", d: "If the controller finds someone without a pass, it is issued and paid for from the same phone — payment by link through the existing sales platform, with cash as the offline safety net. The on-the-spot price carries a supplement, set by the region." }
                         ],
-                        s6_clearing: "LTS is Merchant of Record: collects, takes 8% fee, settles to regions.",
-                        s6_privacy: "Sharp data split: LTS holds identity, PRIOT manages pseudonymized IDs.",
+
+                        s6_title: "Not an Experiment",
+                        s6_lead: "The individual building blocks are already in operation elsewhere. What is new is their combination, applied to infrastructure without turnstiles.",
+                        s6_proofs: [
+                            { icon: '<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>', t: "Digital pass", where: "Switzerland · since 2017/18", d: "Around 120 cross-country trail organisations use a digital pass validated by supervising staff." },
+                            { icon: '<path d="M5 12h14M12 5l7 7-7 7"/>', t: "Digital ticketing", where: "Trentino · since 2022", d: "A cross-country centre close to us uses digital ticketing, but with RFID hardware — the approach we have deliberately not chosen." },
+                            { icon: '<path d="M12 2a10 10 0 100 20 10 10 0 000-20zM2 12h20M12 2a15 15 0 010 20 15 15 0 010-20z"/>', t: "Geofence as trigger", where: "7 EU countries · over 10 years", d: "Satellite-based truck tolling charges at virtual gantries, with no roadside infrastructure at all." }
+                        ],
+                        s6_conclusion: "Alpine skiing solved paid access with <strong>turnstiles at the lifts</strong>. Everything without a physical chokepoint — cross-country, maintained trails, managed natural areas — has never had an answer. <strong class='text-dns-soft'>That is precisely where our approach sits.</strong>",
+
+
+                        sP_title: "The Technology Partner",
+                        sP_lead: "Who would build the system, and why them.",
+                        sP_who_label: "Who they are",
+                        sP_company: "PRIOT Digital Systems",
+                        sP_company_desc: "Maribor, Slovenia. Web and IoT platforms for sports and tourism infrastructure.",
+                        sP_ref_label: "Reference",
+                        sP_ref_name: "Nordic Center Planica",
+                        sP_ref_desc: "Season and day passes with RFID chips and QR codes on cards and stickers, contactless validation via a handheld scanner — without stopping visitors — and personal timing for athletes.",
+                        sP_knowhow: [
+                            { icon: '<path d="M12 2l3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6L3 9l6-1z"/>', t: "Experience in the Nordic vertical", d: "Not a generalist supplier. Planica is a Nordic skiing centre, with the same access and visitor dynamics as our areas." },
+                            { icon: '<path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>', t: "An existing platform", d: "They are not starting from zero: they reuse their own ticketing and tracking system. That is why the price is moderate — and equally why the contractual conditions matter." },
+                            { icon: '<path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.9 9.9 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>', t: "The hardware-free model was their proposal", d: "Having heard our requirements they set aside their own RFID approach and proposed the purely digital route. A sign of listening rather than selling." },
+                            { icon: '<path d="M4 20h4v-4H4v4zm6 0h4V10h-4v10zm6 0h4V4h-4v16z"/>', t: "Willing to proceed in stages", d: "Back in June they themselves suggested starting with a small technology test before committing to a full pilot." }
+                        ],
+                        sP_second: "Second technology partner: <strong>General Solutions · Contwise Maps</strong> — already a partner of DNS and the eight regions in the E-DNS project.",
+                        s7_title: "Clearing & LTS",
+                        s7_api: "Unidirectional inbound synchronisation",
+                        s7_items: [
+                            { t: "Payment flow", d: "LTS acts as intermediary with the right of collection: it collects, retains 8% and settles to the regions by the 10th of the following month. DNS and the vendor never touch the money." },
+                            { t: "Data sovereignty", d: "A sharp split: LTS and the regions hold identity, the technology partner receives only a pseudonymous code (Digital Pass ID)." },
+                            { t: "Still to negotiate", d: "It is not yet clear whether access to the technical interfaces is included in the 8% commission. Irrelevant for the feasibility test, material at full scale." }
+                        ],
+
+                        s8_title: "Governance & Protection",
+                        s8_lead: "Conditions to settle before a single line of code is written — afterwards they become very hard to change.",
                         s8_items: [
-                            { t: "IP Ownership", d: "DNS owns foreman IP. Perpetual license." },
-                            { t: "Source Escrow", d: "Third-party deposit." },
-                            { t: "Data Portability", d: "Full data sovereignty and export." }
+                            { icon: '<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>', t: "IP ownership", d: "For development DNS commissions: ownership, or a perpetual, irrevocable, transferable and royalty-free licence surviving termination. The vendor's core platform remains entirely theirs." },
+                            { icon: '<path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>', t: "Data & portability", d: "DNS is the data owner, with a full export in an open, documented format on exit. On the mapping side this is already settled: with Contwise Maps the data rights remain entirely with the customer, who decides on licensing, sharing and channels." },
+                            { icon: '<path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>', t: "Store accounts", d: "App Store and Google Play accounts are held by DNS, with the vendor as delegated developer. The app stays ours." },
+                            { icon: '<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>', t: "Continuity", d: "Source-code escrow, change-of-control notice and price capping: mandatory for the production phase." }
                         ],
+
+                        s9_title: "What the Test Must Prove",
+                        s9_lead: "The feasibility test exists to answer four questions — not to build a product.",
                         s9_kpis: [
-                            { icon: '<path d="M5 13l4 4L19 7"/>', t: "App Approval", d: "iOS/Android background approval." },
-                            { icon: '<path d="M12 8v4l3 3"/>', t: "Offline Check", d: "100% check without signal." },
-                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Legal Proof", d: "Post-pilot privacy validation." },
-                            { icon: '<path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>', t: "Scaling Readiness", d: "Handles 77k+ tickets volume." }
+                            { icon: '<path d="M5 13l4 4L19 7"/>', t: "Store approval", d: "Will the app be approved on iOS and Android with background location access? That is far from certain." },
+                            { icon: '<path d="M12 8v4l3 3"/>', t: "Battery", d: "Is consumption acceptable for a full day on skis, in the cold? This is the variable that decides everything." },
+                            { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', t: "Geofence reliability", d: "Does detection work in real conditions: cold, tree cover, actual terrain." },
+                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Privacy model", d: "Does the pseudonymisation hold up once actually implemented, not just on paper." }
                         ],
-                        s7_stages: [
-                            { t: "Phase 1: Pilot", d: "Tech/legal test with 50 beta users." },
-                            { t: "Phase 2: Scale", d: "Full rollout and integration." },
-                            { t: "Phase 2+: CRM", d: "Accounts and loyalty." }
-                        ]
+
+                        s10_title: "A Staged Path",
+                        s10_lead: "One decision at a time, each small and reversible. The season sets the rhythm: one stage per winter.",
+                        s10_loc: "Pilot region to be confirmed",
+                        s10_stages: [
+                            { when: "Winter 2026-27", t: "Stage 0 · Feasibility", d: "A minimal build on a handful of devices: geofence detection, battery measurement, app-store submission, verification of the privacy model. No polished app, no real users. Result: a report with measured findings." },
+                            { when: "Spring 2027", t: "Evaluation", d: "Analysis of results, an answer to the running-cost question and, if the picture holds, preparation of a European funding application." },
+                            { when: "Winter 2027-28", t: "Stage 1 · Beta", d: "Beta with real users: one region, one ticket type, around 50 testers. Only if Stage 0 succeeded." },
+                            { when: "From 2028", t: "Phase 2 · Production", d: "Multi-region rollout, bi-directional integration and additional services attached to the pass." }
+                        ],
+
+                        s11_title: "The Economic Picture",
+                        s11_lead: "The figures in the offer received, and the question that stays open before committing to the full build.",
+                        s11_figures: [
+                            { label: "Full pilot offer", value: "€83,400", note: "one-off, plus €13,500 per year for hosting and maintenance" },
+                            { label: "Feasibility test", value: "€15,000–30,000", note: "estimate to be confirmed: the only decision on the table today" },
+                            { label: "Production at scale", value: "€150,000–200,000", note: "indicative, plus €40,000–60,000 per year to operate" }
+                        ],
+                        s11_q_title: "The open question",
+                        s11_q_desc: "The annual running cost is of the same order of magnitude as the entire variable fee of the FAIR model. European funding pays for development, not for operation. The resources are not in the DNS budget but in network revenue: €1.89 million and 77,462 tickets last season.",
+                        s11_floor_title: "The risk has a floor",
+                        s11_floor_desc: "Geofencing is not the foundation of the system but the storey above it. Below it remains a working digital pass: the end of paper cards, online sales, usable data. The worst case is not losing the investment — it is achieving less than the maximum."
                     }
                 }
             }
