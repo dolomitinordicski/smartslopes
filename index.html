@@ -152,6 +152,22 @@
         /* Inspector: controller-assisted validation */
         @keyframes inspectorSweep { 0%,100% { opacity:.25; } 50% { opacity:1; } }
         .inspector-cone { animation: inspectorSweep 3s ease-in-out infinite; }
+
+        /* Genesi del confine: il poligono si disegna dalla traccia GPX, una sola volta */
+        .geo-genesis-path {
+            fill: rgba(13,77,94,0.10);
+            stroke: var(--dns-primary);
+            stroke-width: 2.5;
+            stroke-dasharray: 1;
+            stroke-dashoffset: 1;
+            fill-opacity: 0;
+            transition: stroke-dashoffset 2s cubic-bezier(.16,.84,.44,1),
+                        fill-opacity 1.3s ease 1.4s;
+        }
+        .geo-genesis-path.geo-drawn { stroke-dashoffset: 0; fill-opacity: 1; }
+        @media (prefers-reduced-motion: reduce) {
+            .geo-genesis-path { transition: none; stroke-dashoffset: 0; fill-opacity: 1; }
+        }
     </style>
 </head>
 <body x-data="dnsDeck()" x-cloak>
@@ -348,6 +364,8 @@
             <div class="h-[500px] bg-dns-bg rounded-[3.5rem] relative flex items-center justify-center border border-dns-soft/20 shadow-2xl overflow-hidden">
                 <div class="geo-boundary w-80 h-80 rounded-full border-4 bg-dns-teal/5 relative flex items-center justify-center overflow-visible">
                     <svg viewBox="0 0 320 320" class="absolute inset-0 w-full h-full overflow-visible pointer-events-none">
+                        <path id="geo-genesis-path" class="geo-genesis-path" pathLength="1"
+                              d="M 60,72 C 100,42 178,48 222,88 C 262,124 254,196 212,238 C 172,280 100,272 68,232 C 36,192 28,120 60,72 Z"/>
                         <path d="M -20,60 C 80,95 120,140 160,160 C 200,180 260,215 340,255" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
                         <path d="M -20,60 C 80,95 120,140 160,160 C 200,180 260,215 340,255" fill="none" stroke="#AAD0D1" stroke-width="3" stroke-dasharray="2 8" stroke-linecap="round"/>
                     </svg>
@@ -655,6 +673,16 @@
                         });
                     });
 
+                    /* --- genesi del confine: si disegna una sola volta all'ingresso nella slide Geofencing --- */
+                    const geoPath = document.getElementById('geo-genesis-path');
+                    const geoSlide = document.getElementById('slide-6');
+                    if (geoPath && geoSlide) {
+                        const go = new IntersectionObserver((entries) => {
+                            entries.forEach(e => { if (e.isIntersecting) { geoPath.classList.add('geo-drawn'); go.unobserve(e.target); } });
+                        }, { threshold: 0.35 });
+                        go.observe(geoSlide);
+                    }
+
                     /* --- barra di avanzamento --- */
                     const upd = () => {
                         const h = document.documentElement.scrollHeight - window.innerHeight;
@@ -720,8 +748,8 @@
                         sD_title: "La decisione",
                         sD_lead: "Cosa viene chiesto oggi al Vorstand, e cosa espressamente non viene chiesto.",
                         sD_yes_label: "Si decide oggi",
-                        sD_amount: "Stage 0 · max 30.000 €",
-                        sD_yes: "Il test tecnico di fattibilità in questo inverno: pochi dispositivi, misure documentate, nessun utente reale. Il preventivo definitivo è atteso e sostituirà questo tetto.",
+                        sD_amount: "Stage 0 · 19.100 €",
+                        sD_yes: "Il test tecnico di fattibilità in questo inverno: nessun hardware sulle piste, solo geofencing e GPS su smartphone. Valore del lavoro 27.100 €, di cui 8.000 € contributo PRIOT — investimento netto DNS 19.100 €, 50% alla firma e 50% alla consegna del report (febbraio 2027). L'offerta riconosce già per iscritto che architettura e modello dati sono di DNS.",
                         sD_no_label: "Non si decide oggi",
                         sD_no: [
                             "Il beta con utenti reali: se ne parla in primavera 2027, sui risultati",
@@ -856,7 +884,7 @@
                         s8_title: "Governance & Tutela",
                         s8_lead: "Condizioni da fissare prima che venga scritta una riga di codice: dopo diventano difficilissime da cambiare.",
                         s8_items: [
-                            { icon: '<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>', t: "Proprietà IP", d: "Sugli sviluppi commissionati da DNS: proprietà oppure licenza perpetua, irrevocabile, trasferibile e senza royalty, che sopravvive alla cessazione. La piattaforma base resta del fornitore." },
+                            { icon: '<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>', t: "Proprietà IP", d: "Sugli sviluppi commissionati da DNS: proprietà oppure licenza perpetua, irrevocabile, trasferibile e senza royalty, che sopravvive alla cessazione. La piattaforma base resta del fornitore. Il preventivo Stage 0 lo riconosce già per iscritto: architettura, modello a quattro livelli e pseudonimizzazione sono espressamente attribuiti a DNS." },
                             { icon: '<path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>', t: "Dati e portabilità", d: "DNS è titolare dei dati, con export completo in formato aperto e documentato in caso di uscita. Sul lato cartografico il punto è già risolto: in Contwise Maps i diritti sui dati restano interamente del cliente, che decide licenze, condivisione e canali." },
                             { icon: '<path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>', t: "Account store", d: "Gli account App Store e Google Play sono intestati a DNS, con il fornitore come sviluppatore delegato. L'app resta nostra." },
                             { icon: '<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>', t: "Continuità", d: "Deposito del codice sorgente, notifica in caso di cambio di controllo e tetto ai prezzi: obbligatori per la fase di produzione." }
@@ -866,16 +894,16 @@
                         s9_lead: "Il test di fattibilità serve a rispondere a quattro domande, non a costruire un prodotto.",
                         s9_kpis: [
                             { icon: '<path d="M5 13l4 4L19 7"/>', t: "Approvazione store", d: "L'app viene approvata su iOS e Android con accesso alla posizione in background? Non è scontato." },
-                            { icon: '<path d="M12 8v4l3 3"/>', t: "Batteria", d: "Il consumo è accettabile per una giornata sugli sci, al freddo? È la variabile che decide tutto." },
+                            { icon: '<path d="M12 8v4l3 3"/>', t: "Batteria", d: "Quale intervallo GPS produce dati utili senza svuotare la batteria in una giornata d'inverno? È la variabile che decide tutto." },
                             { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', t: "Affidabilità geofence", d: "Il rilevamento funziona in condizioni reali: freddo, copertura arborea, terreno effettivo." },
-                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Modello privacy", d: "La pseudonimizzazione regge una volta implementata davvero, non solo sulla carta." }
+                            { icon: '<path d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z"/>', t: "Vincoli imprevisti", d: "Quali limiti emergono sul campo che non erano visibili in fase di progettazione — è il punto che nessun documento può anticipare." }
                         ],
 
                         s10_title: "Percorso a stadi",
                         s10_lead: "Una decisione per volta, ognuna piccola e reversibile. Il ritmo lo detta la stagione: uno stadio per inverno.",
                         s10_loc: "Regione pilota da confermare",
                         s10_stages: [
-                            { when: "Inverno 2026-27", t: "Stage 0 · Fattibilità", d: "Build minimale su pochi dispositivi: rilevamento geofence, misura batteria, submission agli app store, verifica del modello privacy. Nessuna app rifinita, nessun utente reale. Risultato: un report con misure documentate." },
+                            { when: "Inverno 2026-27", t: "Stage 0 · Fattibilità", d: "Kick-off a ottobre 2026: build minimale su pochi dispositivi fino a dicembre, poi submission agli app store e test sul campo a Planica tra dicembre e gennaio. Nessuna app rifinita, nessun utente reale. Risultato: report con misure documentate e workshop DNS a febbraio 2027." },
                             { when: "Primavera 2027", t: "Valutazione", d: "Analisi dei risultati, risposta alla domanda sui costi di esercizio e, se il quadro regge, preparazione di una candidatura per un finanziamento europeo." },
                             { when: "Inverno 2027-28", t: "Stage 1 · Beta", d: "Beta con utenti reali: una regione, un tipo di biglietto, circa 50 tester. Solo se lo Stage 0 ha dato esito positivo." },
                             { when: "Dal 2028", t: "Fase 2 · Produzione", d: "Estensione multi-regione, integrazione bidirezionale e servizi aggiuntivi agganciati al pass." }
@@ -885,7 +913,7 @@
                         s11_lead: "Le cifre dell'offerta ricevuta e la domanda che resta aperta prima di impegnarsi sul pieno sviluppo.",
                         s11_figures: [
                             { label: "Offerta pilota completo", value: "83.400 €", note: "una tantum, più 13.500 € annui di hosting e manutenzione" },
-                            { label: "Test di fattibilità", value: "15–30.000 €", note: "stima da confermare: è la sola decisione in discussione oggi" },
+                            { label: "Test di fattibilità", value: "19.100 €", note: "investimento netto DNS su un valore di 27.100 € (8.000 € contributo PRIOT), più l'alloggio del team PRIOT al workshop di febbraio 2027 (stima 300–900 €, a carico DNS, numeri da confermare) — è la sola decisione in discussione oggi" },
                             { label: "Produzione a regime", value: "150–200.000 €", note: "indicativi, più 40–60.000 € annui di esercizio" }
                         ],
                         s11_q_title: "La domanda aperta",
@@ -914,8 +942,8 @@
                         sD_title: "Die Entscheidung",
                         sD_lead: "Worum der Vorstand heute gebeten wird — und worum ausdrücklich nicht.",
                         sD_yes_label: "Heute zu entscheiden",
-                        sD_amount: "Stufe 0 · max. 30.000 €",
-                        sD_yes: "Der technische Machbarkeitstest in diesem Winter: wenige Geräte, belastbare Messwerte, keine echten Nutzer. Das endgültige Angebot wird erwartet und ersetzt diese Obergrenze.",
+                        sD_amount: "Stufe 0 · 19.100 €",
+                        sD_yes: "Der technische Machbarkeitstest in diesem Winter: keine Hardware auf den Loipen, nur Geofencing und GPS am Smartphone. Arbeitswert 27.100 €, davon 8.000 € PRIOT-Beitrag — DNS-Nettoinvestition 19.100 €, 50% bei Vertragsunterzeichnung und 50% bei Lieferung des Berichts (Februar 2027). Das Angebot erkennt bereits schriftlich an, dass Architektur und Datenmodell von DNS stammen.",
                         sD_no_label: "Heute nicht zu entscheiden",
                         sD_no: [
                             "Die Beta mit echten Nutzern: darüber wird im Frühjahr 2027 anhand der Ergebnisse entschieden",
@@ -1050,7 +1078,7 @@
                         s8_title: "Governance & Absicherung",
                         s8_lead: "Bedingungen, die vor der ersten Zeile Code zu klären sind — danach lassen sie sich kaum noch ändern.",
                         s8_items: [
-                            { icon: '<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>', t: "IP-Eigentum", d: "Für von DNS beauftragte Entwicklungen: Eigentum oder eine unbefristete, unwiderrufliche, übertragbare und lizenzgebührenfreie Lizenz, die die Vertragsbeendigung überdauert. Die Kernplattform bleibt beim Anbieter." },
+                            { icon: '<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>', t: "IP-Eigentum", d: "Für von DNS beauftragte Entwicklungen: Eigentum oder eine unbefristete, unwiderrufliche, übertragbare und lizenzgebührenfreie Lizenz, die die Vertragsbeendigung überdauert. Die Kernplattform bleibt beim Anbieter. Das Stufe-0-Angebot erkennt dies bereits schriftlich an: Architektur, Vier-Schichten-Modell und Pseudonymisierung werden ausdrücklich DNS zugeschrieben." },
                             { icon: '<path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>', t: "Daten & Portabilität", d: "DNS ist Eigentümerin der Daten, mit vollständigem Export in einem offenen, dokumentierten Format im Falle eines Ausstiegs. Auf kartografischer Seite ist der Punkt bereits gelöst: Bei Contwise Maps verbleiben die Datenrechte vollständig beim Kunden, der über Lizenzen, Weitergabe und Kanäle entscheidet." },
                             { icon: '<path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>', t: "Store-Konten", d: "Die App-Store- und Google-Play-Konten laufen auf DNS, der Anbieter arbeitet als beauftragter Entwickler. Die App bleibt unsere." },
                             { icon: '<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>', t: "Kontinuität", d: "Quellcode-Hinterlegung, Meldepflicht bei Kontrollwechsel und Preisdeckelung: verbindlich für die Produktionsphase." }
@@ -1060,16 +1088,16 @@
                         s9_lead: "Der Machbarkeitstest dient dazu, vier Fragen zu beantworten — nicht dazu, ein Produkt zu bauen.",
                         s9_kpis: [
                             { icon: '<path d="M5 13l4 4L19 7"/>', t: "Store-Zulassung", d: "Wird die App auf iOS und Android mit Standortzugriff im Hintergrund zugelassen? Das ist keineswegs selbstverständlich." },
-                            { icon: '<path d="M12 8v4l3 3"/>', t: "Akku", d: "Ist der Verbrauch für einen Skitag bei Kälte vertretbar? Das ist die Variable, die alles entscheidet." },
+                            { icon: '<path d="M12 8v4l3 3"/>', t: "Akku", d: "Welches GPS-Intervall liefert brauchbare Daten, ohne den Akku an einem Wintertag zu leeren? Das ist die Variable, die alles entscheidet." },
                             { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', t: "Zuverlässigkeit", d: "Funktioniert die Erkennung unter realen Bedingungen: Kälte, Baumbestand, tatsächliches Gelände." },
-                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Datenschutzmodell", d: "Hält die Pseudonymisierung stand, wenn sie tatsächlich umgesetzt ist — nicht nur auf dem Papier." }
+                            { icon: '<path d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z"/>', t: "Unerwartete Einschränkungen", d: "Welche Grenzen zeigen sich im Feld, die in der Planung nicht sichtbar waren — der Punkt, den kein Dokument vorwegnehmen kann." }
                         ],
 
                         s10_title: "Stufenweiser Weg",
                         s10_lead: "Eine Entscheidung nach der anderen, jede klein und umkehrbar. Den Rhythmus gibt die Saison vor: eine Stufe pro Winter.",
                         s10_loc: "Pilotregion noch zu bestätigen",
                         s10_stages: [
-                            { when: "Winter 2026-27", t: "Stufe 0 · Machbarkeit", d: "Minimaler Aufbau auf wenigen Geräten: Geofence-Erkennung, Akkumessung, Einreichung in den App-Stores, Prüfung des Datenschutzmodells. Keine fertige App, keine echten Nutzer. Ergebnis: ein Bericht mit belastbaren Messwerten." },
+                            { when: "Winter 2026-27", t: "Stufe 0 · Machbarkeit", d: "Kick-off im Oktober 2026: minimaler Aufbau auf wenigen Geräten bis Dezember, danach Einreichung in den App-Stores und Feldtest in Planica zwischen Dezember und Januar. Keine fertige App, keine echten Nutzer. Ergebnis: Bericht mit belastbaren Messwerten und DNS-Workshop im Februar 2027." },
                             { when: "Frühjahr 2027", t: "Auswertung", d: "Analyse der Ergebnisse, Antwort auf die Frage der laufenden Kosten und, sofern das Bild trägt, Vorbereitung eines europäischen Förderantrags." },
                             { when: "Winter 2027-28", t: "Stufe 1 · Beta", d: "Beta mit echten Nutzern: eine Region, ein Tarif, rund 50 Testpersonen. Nur wenn Stufe 0 erfolgreich war." },
                             { when: "Ab 2028", t: "Phase 2 · Produktion", d: "Ausweitung auf mehrere Regionen, bidirektionale Integration und Zusatzdienste rund um den Pass." }
@@ -1079,7 +1107,7 @@
                         s11_lead: "Die Zahlen des vorliegenden Angebots und die Frage, die vor einer Entscheidung über den Vollausbau offen bleibt.",
                         s11_figures: [
                             { label: "Angebot Vollpilot", value: "83.400 €", note: "einmalig, zuzüglich 13.500 € jährlich für Hosting und Wartung" },
-                            { label: "Machbarkeitstest", value: "15.000–30.000 €", note: "Schätzung, noch zu bestätigen: die einzige heute zu treffende Entscheidung" },
+                            { label: "Machbarkeitstest", value: "19.100 €", note: "DNS-Nettoinvestition bei einem Arbeitswert von 27.100 € (8.000 € PRIOT-Beitrag), zzgl. Unterkunft des PRIOT-Teams beim Workshop im Februar 2027 (Schätzung 300–900 €, zulasten DNS, Zahlen noch zu bestätigen) — die einzige heute zu treffende Entscheidung" },
                             { label: "Vollausbau", value: "150.000–200.000 €", note: "indikativ, zuzüglich 40.000–60.000 € jährlich im Betrieb" }
                         ],
                         s11_q_title: "Die offene Frage",
@@ -1108,8 +1136,8 @@
                         sD_title: "The Decision",
                         sD_lead: "What the Board is being asked today — and what it is expressly not being asked.",
                         sD_yes_label: "Decided today",
-                        sD_amount: "Stage 0 · max €30,000",
-                        sD_yes: "The technical feasibility test this winter: a handful of devices, measured findings, no real users. The final quote is expected and will replace this ceiling.",
+                        sD_amount: "Stage 0 · €19,100",
+                        sD_yes: "The technical feasibility test this winter: no hardware on the trails, only geofencing and GPS on smartphones. Work value €27,100, of which €8,000 is a PRIOT contribution — net DNS investment €19,100, 50% on signature and 50% on delivery of the report (February 2027). The offer already acknowledges in writing that the architecture and data model are DNS's.",
                         sD_no_label: "Not decided today",
                         sD_no: [
                             "The beta with real users: decided in spring 2027, on the results",
@@ -1244,7 +1272,7 @@
                         s8_title: "Governance & Protection",
                         s8_lead: "Conditions to settle before a single line of code is written — afterwards they become very hard to change.",
                         s8_items: [
-                            { icon: '<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>', t: "IP ownership", d: "For development DNS commissions: ownership, or a perpetual, irrevocable, transferable and royalty-free licence surviving termination. The vendor's core platform remains entirely theirs." },
+                            { icon: '<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>', t: "IP ownership", d: "For development DNS commissions: ownership, or a perpetual, irrevocable, transferable and royalty-free licence surviving termination. The vendor's core platform remains entirely theirs. The Stage 0 offer already acknowledges this in writing: the architecture, the four-layer model and the pseudonymisation are expressly attributed to DNS." },
                             { icon: '<path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>', t: "Data & portability", d: "DNS is the data owner, with a full export in an open, documented format on exit. On the mapping side this is already settled: with Contwise Maps the data rights remain entirely with the customer, who decides on licensing, sharing and channels." },
                             { icon: '<path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>', t: "Store accounts", d: "App Store and Google Play accounts are held by DNS, with the vendor as delegated developer. The app stays ours." },
                             { icon: '<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>', t: "Continuity", d: "Source-code escrow, change-of-control notice and price capping: mandatory for the production phase." }
@@ -1254,16 +1282,16 @@
                         s9_lead: "The feasibility test exists to answer four questions — not to build a product.",
                         s9_kpis: [
                             { icon: '<path d="M5 13l4 4L19 7"/>', t: "Store approval", d: "Will the app be approved on iOS and Android with background location access? That is far from certain." },
-                            { icon: '<path d="M12 8v4l3 3"/>', t: "Battery", d: "Is consumption acceptable for a full day on skis, in the cold? This is the variable that decides everything." },
+                            { icon: '<path d="M12 8v4l3 3"/>', t: "Battery", d: "Which GPS interval produces usable data without draining the battery on a winter day? This is the variable that decides everything." },
                             { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', t: "Geofence reliability", d: "Does detection work in real conditions: cold, tree cover, actual terrain." },
-                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Privacy model", d: "Does the pseudonymisation hold up once actually implemented, not just on paper." }
+                            { icon: '<path d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z"/>', t: "Unexpected constraints", d: "What limits show up on the ground that weren't visible at the design stage — the one thing no document can anticipate." }
                         ],
 
                         s10_title: "A Staged Path",
                         s10_lead: "One decision at a time, each small and reversible. The season sets the rhythm: one stage per winter.",
                         s10_loc: "Pilot region to be confirmed",
                         s10_stages: [
-                            { when: "Winter 2026-27", t: "Stage 0 · Feasibility", d: "A minimal build on a handful of devices: geofence detection, battery measurement, app-store submission, verification of the privacy model. No polished app, no real users. Result: a report with measured findings." },
+                            { when: "Winter 2026-27", t: "Stage 0 · Feasibility", d: "Kick-off in October 2026: a minimal build on a handful of devices through December, then app-store submission and field testing at Planica between December and January. No polished app, no real users. Result: a report with measured findings and a DNS workshop in February 2027." },
                             { when: "Spring 2027", t: "Evaluation", d: "Analysis of results, an answer to the running-cost question and, if the picture holds, preparation of a European funding application." },
                             { when: "Winter 2027-28", t: "Stage 1 · Beta", d: "Beta with real users: one region, one ticket type, around 50 testers. Only if Stage 0 succeeded." },
                             { when: "From 2028", t: "Phase 2 · Production", d: "Multi-region rollout, bi-directional integration and additional services attached to the pass." }
@@ -1273,7 +1301,7 @@
                         s11_lead: "The figures in the offer received, and the question that stays open before committing to the full build.",
                         s11_figures: [
                             { label: "Full pilot offer", value: "€83,400", note: "one-off, plus €13,500 per year for hosting and maintenance" },
-                            { label: "Feasibility test", value: "€15,000–30,000", note: "estimate to be confirmed: the only decision on the table today" },
+                            { label: "Feasibility test", value: "€19,100", note: "net DNS investment on a work value of €27,100 (€8,000 PRIOT contribution), plus accommodation for the PRIOT team at the February 2027 workshop (estimated €300–900, borne by DNS, numbers still to be confirmed) — the only decision on the table today" },
                             { label: "Production at scale", value: "€150,000–200,000", note: "indicative, plus €40,000–60,000 per year to operate" }
                         ],
                         s11_q_title: "The open question",
