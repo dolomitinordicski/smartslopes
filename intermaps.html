@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNS Smart Slopes – System Concept (External Overview)</title>
+    <!-- Tailwind & Alpine.js -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;700;900&family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --dns-primary: #0D4D5E;
+            --dns-deep: #083845;
+            --dns-teal: #417483;
+            --dns-soft: #AAD0D1;
+            --dns-bg: #F4F9F9;
+        }
+        body { font-family: 'Roboto', sans-serif; background-color: var(--dns-bg); color: var(--dns-primary); margin: 0; scroll-behavior: smooth; overflow-x: hidden; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Be Vietnam Pro', sans-serif; }
+
+        /* Utility Colors */
+        .bg-dns-primary { background-color: var(--dns-primary); }
+        .bg-dns-deep { background-color: var(--dns-deep); }
+        .text-dns-soft { color: var(--dns-soft); }
+        .text-dns-teal { color: var(--dns-teal); }
+        .border-dns-soft { border-color: var(--dns-soft); }
+        /* Slide Layout */
+        .slide-section { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 6rem 1.5rem; position: relative; border-bottom: 1px solid rgba(13, 77, 94, 0.05); }
+        @media (min-width: 1024px) { .slide-section { padding: 4rem 10rem; } }
+        /* Icon & Graphic Refinements */
+        .wf-icon { fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .glass-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+
+        /* Architecture & Lifecycle Effects */
+        .premium-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; }
+        .premium-card.active { border-color: var(--dns-soft); background: var(--dns-primary); color: white; transform: translateY(-5px); box-shadow: 0 25px 50px -12px rgba(13, 77, 94, 0.25); }
+        .step-node { position: relative; z-index: 10; transition: all 0.4s; }
+        .step-node.active { transform: scale(1.15); filter: drop-shadow(0 0 15px var(--dns-soft)); }
+        .timeline-track { height: 2px; background: linear-gradient(90deg, transparent, var(--dns-teal) 15%, var(--dns-teal) 85%, transparent); opacity: 0.2; }
+        /* Animations */
+        .radar-rotate { animation: rotate 5s linear infinite; transform-origin: center; }
+        @keyframes geoMove { 0% { offset-distance: 0%; } 100% { offset-distance: 100%; } }
+        .geo-tracker {
+            position: absolute; top: 0; left: 0; width: 0; height: 0;
+            offset-path: path('M -20,60 C 80,95 120,140 160,160 C 200,180 260,215 340,255');
+            animation: geoMove 9s linear infinite;
+        }
+        @keyframes geoDotState {
+            0%, 22%   { background-color: var(--dns-teal); box-shadow: 0 0 0 0 rgba(13,77,94,0); }
+            30%, 70%  { background-color: var(--dns-primary); box-shadow: 0 0 0 6px rgba(13,77,94,0.15); }
+            78%, 100% { background-color: var(--dns-teal); box-shadow: 0 0 0 0 rgba(13,77,94,0); }
+        }
+        .geo-tracker-dot {
+            position: absolute; top: -11px; left: -11px; width: 22px; height: 22px;
+            border-radius: 9999px; border: 4px solid #ffffff;
+            animation: geoDotState 9s linear infinite;
+        }
+        @keyframes geoPulseState {
+            0%, 24%   { opacity: 0; transform: scale(0.5); }
+            30%, 70%  { opacity: 1; transform: scale(1); }
+            76%, 100% { opacity: 0; transform: scale(0.5); }
+        }
+        .geo-tracker-pulse {
+            position: absolute; top: -20px; left: -20px; width: 40px; height: 40px;
+            border-radius: 9999px; border: 2px solid var(--dns-primary);
+            animation: geoPulseState 9s linear infinite, blip 1.6s infinite;
+        }
+        @keyframes geoBadgeOn {
+            0%, 24%   { opacity: 0; transform: translate(-50%, 6px); }
+            30%, 70%  { opacity: 1; transform: translate(-50%, 0); }
+            76%, 100% { opacity: 0; transform: translate(-50%, 6px); }
+        }
+        @keyframes geoBadgeOff {
+            0%, 20%   { opacity: 1; transform: translate(-50%, 0); }
+            26%, 74%  { opacity: 0; transform: translate(-50%, -6px); }
+            80%, 100% { opacity: 1; transform: translate(-50%, 0); }
+        }
+        .geo-tracker-badge { position: absolute; top: -44px; left: 11px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; padding: 6px 14px; border-radius: 9999px; white-space: nowrap; }
+        .geo-tracker-badge.on  { background-color: var(--dns-primary); color: var(--dns-soft); animation: geoBadgeOn 9s linear infinite; }
+        .geo-tracker-badge.off { background-color: #ffffff; color: var(--dns-teal); border: 1.5px solid var(--dns-teal); animation: geoBadgeOff 9s linear infinite; }
+        @keyframes geoBoundaryFlash {
+            0%, 23%, 27%, 73%, 77%, 100% { border-color: rgba(65,116,131,0.1); }
+            25%, 75% { border-color: rgba(13,77,94,0.5); }
+        }
+        .geo-boundary { animation: geoBoundaryFlash 9s linear infinite; }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .shadow-3xl { box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.3); }
+        @keyframes blip { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.8); opacity: 0; } 100% { transform: scale(1); opacity: 0; } }
+        .gps-blip { position: absolute; width: 12px; height: 12px; border-radius: 9999px; background-color: var(--dns-soft); box-shadow: 0 0 10px 2px rgba(170, 208, 209, 0.6); }
+        .gps-blip::after { content: ''; position: absolute; inset: 0; border-radius: 9999px; background-color: var(--dns-soft); animation: blip 2s infinite; }
+        [x-cloak] { display: none !important; }
+
+        /* ============ LOGO ============ */
+        .dns-logo-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+        .dns-logo { display: block; aspect-ratio: 835 / 315; height: auto; }
+        .dns-lg-a { fill: #8FB9B8; }
+        .dns-lg-b { fill: var(--dns-primary); }
+        /* variante per fondo scuro */
+        .dns-logo-inv .dns-lg-a { fill: var(--dns-soft); }
+        .dns-logo-inv .dns-lg-b { fill: #FFFFFF; }
+
+        /* ============ SCALA TIPOGRAFICA UNIFICATA ============ */
+        .s-h1 { font-size: clamp(2.75rem, 6.2vw, 4.75rem); font-weight: 900; line-height: 0.9; letter-spacing: -0.035em; margin-bottom: 3rem; }
+        .s-h2 { font-size: clamp(1.9rem, 3.4vw, 3rem); font-weight: 900; line-height: 1.03; letter-spacing: -0.03em; text-transform: uppercase; margin-bottom: 1.5rem; }
+        .s-h2-solo { margin-bottom: 3.75rem; }
+        .s-lead { font-size: clamp(1.05rem, 1.35vw, 1.3rem); font-weight: 300; line-height: 1.62; max-width: 46rem; margin-bottom: 3.5rem; }
+        .s-lead-tight { margin-bottom: 2.5rem; }
+        .s-stat { font-size: clamp(1.7rem, 2.6vw, 2.35rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; }
+
+        /* ============ COMPARSA CON LO SCROLL ============ */
+        [data-rv] {
+            opacity: 0; transform: translateY(26px) scale(0.995);
+            transition: opacity .75s cubic-bezier(.16,.84,.44,1), transform .75s cubic-bezier(.16,.84,.44,1);
+            transition-delay: var(--rv-d, 0ms); will-change: opacity, transform;
+        }
+        [data-rv].rv-in { opacity: 1; transform: none; }
+        @media (prefers-reduced-motion: reduce) {
+            [data-rv], [data-rv].rv-in { opacity: 1 !important; transform: none !important; transition: none !important; }
+            html { scroll-behavior: auto !important; }
+        }
+
+        /* ============ SCORRIMENTO ============ */
+        html { scroll-snap-type: y proximity; }
+        .slide-section { scroll-snap-align: start; scroll-snap-stop: normal; }
+
+        /* barra di avanzamento */
+        .progress-rail { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 120; background: rgba(13,77,94,0.08); }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--dns-teal), var(--dns-soft)); transition: width .15s linear; }
+
+        /* pulsante autoplay */
+        .ctrl-btn { transition: all .3s; }
+        .ctrl-btn:hover { transform: scale(1.08); }
+        @keyframes ringPulse { 0% { box-shadow: 0 0 0 0 rgba(170,208,209,.55); } 70% { box-shadow: 0 0 0 12px rgba(170,208,209,0); } 100% { box-shadow: 0 0 0 0 rgba(170,208,209,0); } }
+        .ctrl-btn.playing { animation: ringPulse 2.2s infinite; }
+
+        /* alleggerimento grafico: velo sfumato sulle slide chiare */
+        .slide-section.bg-white::before,
+        .slide-section.bg-dns-bg::before {
+            content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+            background: radial-gradient(120% 80% at 88% 8%, rgba(170,208,209,0.20), transparent 60%);
+        }
+        .slide-section > * { position: relative; z-index: 1; }
+        /* Typographic scale for sub-headings/paragraphs (h3-h6, p) — 5 semantic roles, one size each. */
+        .dns-eyebrow      { font-size: 0.6875rem; }
+        .dns-item-title   { font-size: 0.9375rem; }
+        .dns-item-desc    { font-size: 0.875rem; }
+        .dns-detail-title { font-size: 1.875rem; }
+        .dns-detail-desc  { font-size: 1.25rem; }
+        .slide-dot { background-color: var(--dns-primary); border: 2px solid #ffffff; box-shadow: 0 0 0 1px rgba(8, 56, 69, 0.25); }
+        /* Inspector: controller-assisted validation */
+        @keyframes inspectorSweep { 0%,100% { opacity:.25; } 50% { opacity:1; } }
+        .inspector-cone { animation: inspectorSweep 3s ease-in-out infinite; }
+
+        /* Genesi del confine: il poligono si disegna dalla traccia GPX, una sola volta */
+        .geo-genesis-path {
+            fill: rgba(13,77,94,0.10);
+            stroke: var(--dns-primary);
+            stroke-width: 2.5;
+            stroke-dasharray: 1;
+            stroke-dashoffset: 1;
+            fill-opacity: 0;
+            transition: stroke-dashoffset 2s cubic-bezier(.16,.84,.44,1),
+                        fill-opacity 1.3s ease 1.4s;
+        }
+        .geo-genesis-path.geo-drawn { stroke-dashoffset: 0; fill-opacity: 1; }
+        @media (prefers-reduced-motion: reduce) {
+            .geo-genesis-path { transition: none; stroke-dashoffset: 0; fill-opacity: 1; }
+        }
+    </style>
+</head>
+<body x-data="dnsDeck()" x-cloak>
+    <svg class="dns-logo-sprite" aria-hidden="true" focusable="false"><symbol id="dns-logo" viewBox="55 45 835 315">
+        <path class="dns-lg-a" d="M626.15,169.48h-21.71v83.5h21.71v-83.5ZM579.48,187.86h17.94v-18.38h-57.58v18.38h17.94v65.11h21.7v-65.11ZM532.99,169.48h-21.7v83.5h21.7v-83.5ZM396.65,252.98h21.59l6.98-48.06h.22l19.16,48.06h8.64l20.04-48.06h.22l6.09,48.06h21.71l-12.62-83.5h-21.59l-17.94,44.63-16.94-44.63h-21.37l-14.17,83.5ZM346.36,187.75c12.96,0,23.59,10.52,23.59,22.04,0,14.4-10.63,24.92-23.59,24.92s-23.59-10.52-23.59-24.92c0-11.52,10.63-22.04,23.59-22.04M346.36,166.71c-24.03,0-46.18,17.72-46.18,42.97,0,27.02,19.38,46.07,46.18,46.07s46.18-19.05,46.18-46.07c0-25.25-22.15-42.97-46.18-42.97M272.52,169.48h-21.7v83.5h47.73v-18.38h-26.02v-65.11ZM194.16,187.75c12.96,0,23.59,10.52,23.59,22.04,0,14.4-10.63,24.92-23.59,24.92s-23.59-10.52-23.59-24.92c0-11.52,10.63-22.04,23.59-22.04M194.16,166.71c-24.03,0-46.18,17.72-46.18,42.97,0,27.02,19.38,46.07,46.18,46.07s46.18-19.05,46.18-46.07c0-25.25-22.15-42.97-46.18-42.97M90.3,187.86h5.09c13.95,0,23.81,8.42,23.81,23.37,0,16.28-11.07,23.37-24.03,23.37h-4.87v-46.73ZM68.6,252.98h30.78c23.14,0,42.41-18.27,42.41-41.75s-19.16-41.75-42.41-41.75h-30.78v83.5Z"/>
+        <path class="dns-lg-b" d="M705.2,269.93h-9.3v83.5h9.3v-83.5ZM637.51,305.7v-35.77h-9.3v83.5h9.3v-35.99l2.33-2.32,34.22,38.32h12.85l-40.53-44.63,39.2-38.87h-12.51l-35.55,35.77ZM612.34,281.45c-4.43-8.19-12.29-12.96-21.59-12.96-12.4,0-23.37,8.31-23.37,21.26,0,11.96,8.42,16.94,18.16,21.37l5.09,2.21c7.75,3.54,15.39,6.87,15.39,16.61s-8.2,16.28-17.16,16.28-15.5-6.98-16.72-15.5l-9.08,2.55c2.66,12.96,12.62,21.59,26.02,21.59,14.51,0,26.24-11.19,26.24-25.8,0-13.29-9.19-18.71-20.04-23.48l-5.54-2.44c-5.65-2.55-13.07-5.87-13.07-13.07,0-7.64,6.42-12.96,13.84-12.96s11.07,3.32,14.4,9.08l7.42-4.76ZM552.84,276.69c-7.42-5.54-15.61-8.19-24.92-8.19-23.92,0-43.52,19.6-43.52,43.52s19.93,42.86,43.52,42.86c8.86,0,17.72-2.99,24.92-8.19v-11.52c-6.64,6.64-15.84,11.07-25.25,11.07-18.71,0-33.89-16.17-33.89-34.55s15.06-34.55,33.66-34.55c9.63,0,18.83,4.21,25.47,11.07v-11.52ZM471.65,269.93h-9.3v83.5h9.3v-83.5ZM395.9,344.79v-66.22h6.76c9.86,0,18.27,1.33,25.91,8.08,7.2,6.31,10.85,15.5,10.85,25.03s-3.54,18.05-10.41,24.47c-7.64,7.2-16.17,8.64-26.36,8.64h-6.76ZM386.6,353.43h15.5c13.07,0,23.03-1.66,33-10.52,9.19-8.19,13.62-18.94,13.62-31.12s-4.32-23.59-13.84-31.78c-9.86-8.42-20.04-10.08-32.56-10.08h-15.72v83.5ZM337.12,316.77h2.32l25.25,36.65h11.41l-26.58-37.43c12.85-1.11,20.93-10.19,20.93-23.03,0-18.83-14.73-23.03-30.56-23.03h-12.07v83.5h9.3v-36.65ZM337.12,278.57h2.77c11.19,0,21.26,1.33,21.26,15.06,0,12.96-10.63,14.95-21.15,14.95h-2.88v-30.01ZM271.04,277.13c19.16,0,34.22,15.62,34.22,34.55s-15.28,34.55-34.22,34.55-34.22-15.73-34.22-34.55,15.06-34.55,34.22-34.55M271.04,268.49c-23.81,0-43.52,19.38-43.52,43.3s19.71,43.08,43.52,43.08,43.52-19.05,43.52-43.08-19.71-43.3-43.52-43.3M139.59,353.43h9.3v-64.34l65.11,68.1v-87.26h-9.3v64.67l-65.11-68.22v87.04Z"/>
+        <path class="dns-lg-a" d="M698.66,238.5s9.42,1.65,29.07,6.68c27.25,6.97,68.5,20.01,80.77,40.36,18.39,30.51-33.04,67.62-33.04,67.62h39.77s41.38-36.18,13.77-74.04c-24.17-33.14-130.34-40.63-130.34-40.63"/>
+        <path class="dns-lg-a" d="M631.35,231.28s117.48,21.38,140.43,50.78c22.95,29.4-57.21,71.37-57.21,71.37h39.77s64.63-34.58,37.02-72.43c-24.17-33.14-160.01-49.71-160.01-49.71"/>
+        <path class="dns-lg-a" d="M755.61,108.68s-.15.14-.6.71l-2.18-3.02c1.76-1.9,2.27-2.39,2.27-2.39v2.22c.08,1.26.35,2.08.51,2.48h0ZM761.72,112.73c.21-1.34-2.25-4.93-2.25-4.93v-.05c.14-1.1,1.76-15.54.95-17.06-.82-1.53-3.06.42-3.06.42l-10.06,8.39-15.11-16.62s1.51-1.65.42-2.6c-1.09-.95-4.73,2.13-3.78,3.36.95,1.23,2.29.19,2.29.19l13.99,17.52-4.35,4.16c-.31-.02.83-5.84.46-5.85-.93-2.05-1.47-4.56-4.7-6.31-2.87-1.43-9.46.86-9.46.86,0,0-2.84,6.74-2.62,7.3.17.43.41,2.74.51,3.73-3.03.82-5.91,1.86-8.19,3.21-4.1-3.01-15.05-10.81-17.85-10.46-4.89.62-9.46,3.04-12.12,5.21l-2.64,2.17s-.39-.41-1.55-.5l-1.09-33.91s2.6-.99,1.51-2.35c-1.09-1.36-4.98-.11-4.53,1.09.5,1.34,1.34,1.26,1.34,1.26l-.17,34.08c-1.48.2-2.74.77-2.98,2.12-.3,1.71,1.29,5.68,1.29,5.68.54.63,2.02,1.43,2.02,1.43v1.18s1,1.49,2.27.76c.65-.43.65-.92.65-.92l-.09-1.07c.24-.02.48-.05.78-.07,1.15-.11,2.7-4.42,2.86-4.89.12-.1,3-2.16,3-2.16.95-.59,1.93-1.11,2.81-1.37,2.86-.82,5.42-.61,5.42-.61,0,0,3.45,1.11,4.99,2.54.84.79,4.28,4.91,7.19,8.45-.19.31-.37.64-.55.96.23.49,6.88,10.59,13.66,12.5,6.29,1.77,11.84-1.13,12.75-1.64,4.15-5.74,8.62-11.59,10.8-14.43,1.41-1.65,2.97-3.44,4.59-5.2.11-.12,2.59,2.95,2.59,2.95-.34.51-.39.67-.25.76-.09.65.65,1.59,1.29,2.28,0,.25.02,1.34.26,1.7.27.41,3.54,2.04,3.54,2.04,0,0,.52-.42,1.13-1.04.29.07.66.06.95-.31.56-.73.21-1.09.21-1.09.33-.49.86-2.49.92-2.86"/>
+        <path class="dns-lg-b" d="M766.69,235.77c-.54-1.36-1.77-.54-2.04.95-.27,1.5-1.23,3.41-4.77,2.86-3.38-.52-9.89-3.62-19.57-5.57.13-.01.22-.02.22-.02l.68-.95s-.95-.68-2.04-1.91c-1.09-1.23-1.91-5.04-2.45-8.99-.43-3.15.44-9.07.81-11.38.05-.03.14-.07.14-.07,0,0,.14-6.13,2.86-15.4,2.73-9.27,4.91-16.08,5.18-17.31.27-1.23-4.2-11.64-8.15-19-3.54-6.59-12.97-12.21-12.97-12.21,0,0,1.04-3.12,4.1-8.36l-.08.12s-8.02,1.98-14.89-3.18c-6.87-5.16-7.88-11.34-7.88-11.34,0,0,.05-.12.12-.31-3.02,6.71-5.03,12.98-5.01,12.98-2.92,4.11-11.76,16.62-12.89,18.66-1.36,2.45-5.18,10.63-5.18,10.63l-11.31,11.18s-6.54,14.31-11.45,18.26c-4.91,3.95-6.41,5.59-6.41,5.59,0,0-5.18,4.09-8.45,5.59-3.27,1.5-7.63,4.64-8.31,5.73-.68,1.09-1.23,2.18-1.23,2.18l.2.2c-9.05,5.7-19.96,13.11-20.64,12.88-.82-.27.14-4.63.14-4.63,0,0-1.5,0-2.05.41-.54.41-2.59,6-1.64,6.95.96.95,3.14,1.09,4.77.41,1.64-.68,14.58-8.59,20.31-11.72,1.4-.77,3.56-1.87,6.02-3.08,1.14-.41,2.44-.95,3.93-1.69,1.06-.53,1.98-1.07,2.83-1.61,5.83-2.81,11.21-5.34,11.21-5.34l4.5-1.91s-.14-1.77-.82-1.36c-.27.16-2.51.51-5.68,1.21.74-.7,1.44-1.37,1.91-1.82,2.97-2.35,7.49-6.55,10.31-8.52,4.09-2.86,11.86-7.91,11.86-7.91,0,0,1.23-5.86,1.91-6.54.68-.68,8.27-12.86,16.04-18.44,7.77-5.59,9.02-5.37,9.02-5.37,0,0,12.96,5.14,17.73,10.73,4.77,5.59,7.63,11.31,7.9,11.59.27.27-3.41,3-3.54,4.9-.14,1.91,2.18,9.95,1.64,15.95-.3,3.34-.82,6.02-1.21,7.76-.42,1.13-1.47,4.08-2.2,6.55-.95,3.27-1.36,4.23-1.91,5.04-.55.82-.95,4.77.95,8.18,1.42,2.54,2.54,4.46,3.86,5.56-10.36-1.22-23.22-1.57-23.22-1.34l-2.04.41s12.4,1.23,23.85,3.54c11.45,2.32,27.67,6.27,27.67,6.27,0,0,2.32,0,3.95-.41,1.64-.41,3.95-4.22,3.41-5.59"/>
+    </symbol></svg>
+    <!-- Navigation Header -->
+    <!-- barra di avanzamento -->
+    <div class="progress-rail"><div class="progress-fill" :style="'width:' + progress + '%'"></div></div>
+    <nav class="fixed top-0 w-full z-[100] flex justify-between items-center px-6 py-5 md:px-12 pointer-events-none">
+        <div class="flex items-center pointer-events-auto bg-white/95 backdrop-blur-xl p-3 rounded-2xl shadow-2xl border border-dns-soft/20">
+            <svg class="dns-logo h-9 md:h-10 px-1" role="img" aria-label="Dolomiti NordicSki"><use href="#dns-logo"/></svg>
+        </div>
+        <div class="flex items-center space-x-3 pointer-events-auto">
+            <button @click="toggleAuto()" :title="autoplay ? 'Pausa' : 'Scorrimento automatico'"
+                    class="ctrl-btn w-11 h-11 rounded-2xl bg-dns-primary text-dns-soft shadow-2xl border border-white/5 flex items-center justify-center"
+                    :class="autoplay ? 'playing' : ''">
+                <svg x-show="!autoplay" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg x-show="autoplay" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+            </button>
+        <div class="flex space-x-1 bg-dns-primary p-1.5 rounded-2xl pointer-events-auto shadow-2xl border border-white/5">
+            <template x-for="l in ['IT','DE','EN']">
+                <button @click="lang = l.toLowerCase()"
+                        :class="lang === l.toLowerCase() ? 'bg-dns-soft text-dns-primary shadow-lg' : 'text-white/60 hover:text-white'"
+                        class="px-5 py-2 rounded-xl text-[11px] font-black transition-all uppercase" x-text="l"></button>
+            </template>
+            </div>
+        </div>
+    </nav>
+    <!-- Slide dot navigation -->
+    <div class="fixed right-6 top-1/2 -translate-y-1/2 z-[100] hidden md:flex flex-col items-center space-y-4">
+        <div class="mb-3 text-center">
+            <span class="block text-[13px] font-black text-dns-primary leading-none" x-text="String(activeSlide).padStart(2,'0')"></span>
+            <span class="block text-[9px] font-black text-dns-teal opacity-50 mt-1" x-text="'/ ' + String(totalSlides).padStart(2,'0')"></span>
+        </div>
+        <template x-for="n in totalSlides">
+            <a :href="'#slide-' + n" @click.prevent="goToSlide(n)"
+               class="slide-dot rounded-full transition-all cursor-pointer"
+               :class="activeSlide === n ? 'w-3.5 h-3.5' : 'w-2 h-2'"
+               :style="activeSlide === n ? 'border-color: var(--dns-soft)' : ''"
+               :title="'Slide ' + n"></a>
+        </template>
+    </div>
+
+    <!-- Slide 1: VISION -->
+    <section id="slide-1" class="slide-section bg-dns-primary text-white overflow-hidden">
+        <div class="max-w-5xl z-10">
+            <svg class="dns-logo dns-logo-inv h-16 md:h-24 mb-14" role="img" aria-label="Dolomiti NordicSki"><use href="#dns-logo"/></svg>
+            <h6 class="text-dns-soft font-black tracking-[0.6em] uppercase mb-8 dns-eyebrow opacity-80" x-text="content[lang].s1_tag"></h6>
+            <h1 class="s-h1" x-html="content[lang].s1_title"></h1>
+            <div class="flex items-center space-x-6 mb-10">
+                <div class="h-[3px] w-16 bg-dns-soft rounded-full"></div>
+                <span class="text-dns-soft font-black tracking-[0.4em] uppercase text-sm">Smart Slopes Concept</span>
+            </div>
+            <p class="text-xl md:text-3xl text-dns-soft/60 font-light max-w-3xl leading-relaxed" x-text="content[lang].s1_desc"></p>
+        </div>
+        <div class="absolute right-[-10%] bottom-[-10%] opacity-[0.03] w-2/3 h-full pointer-events-none">
+            <svg viewBox="0 0 100 100" fill="white"><path d="M0 100 L100 100 L100 0 Z"/></svg>
+        </div>
+    </section>
+
+    <!-- Slide 2: IL PROBLEMA OGGI -->
+    <section id="slide-2" class="slide-section bg-white">
+        <h2 class="s-h2 text-dns-primary" x-text="content[lang].sQ_title"></h2>
+        <p class="s-lead text-dns-teal" x-text="content[lang].sQ_lead"></p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <template x-for="(q, i) in content[lang].sQ_points">
+                <button @click="activeProblem = i" class="p-10 rounded-[3rem] border-2 transition-all text-left"
+                        :class="activeProblem === i ? 'bg-dns-deep text-white border-dns-soft shadow-3xl' : 'bg-dns-bg border-dns-soft/20 text-dns-primary opacity-70 hover:opacity-100'">
+                    <svg class="w-11 h-11 wf-icon mb-7" :class="activeProblem === i ? 'text-dns-soft' : 'text-dns-primary'" viewBox="0 0 24 24" x-html="q.icon"></svg>
+                    <h4 class="font-black dns-item-title uppercase tracking-widest mb-4" x-text="q.t"></h4>
+                    <p class="dns-item-desc font-light leading-relaxed opacity-85" x-text="q.d" x-show="activeProblem === i"></p>
+                </button>
+            </template>
+        </div>
+        <div class="bg-dns-primary text-white p-12 rounded-[3.5rem] shadow-3xl border-l-[12px] border-dns-soft">
+            <p class="dns-detail-desc font-light leading-relaxed" x-html="content[lang].sQ_root"></p>
+        </div>
+    </section>
+
+    <!-- Slide 3: NON È UN ESPERIMENTO -->
+    <section id="slide-3" class="slide-section bg-dns-bg">
+        <h2 class="s-h2 text-dns-primary" x-text="content[lang].s6_title"></h2>
+        <p class="s-lead text-dns-teal" x-text="content[lang].s6_lead"></p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-14">
+            <template x-for="(p, i) in content[lang].s6_proofs">
+                <button @click="activeProof = i" class="p-10 rounded-[3rem] border-2 transition-all text-left shadow-xl"
+                        :class="activeProof === i ? 'bg-white border-dns-primary shadow-3xl scale-[1.03]' : 'bg-white/40 border-dns-soft/20 opacity-60 hover:opacity-100'">
+                    <svg class="w-12 h-12 text-dns-primary mb-8 wf-icon" viewBox="0 0 24 24" x-html="p.icon"></svg>
+                    <h4 class="font-black dns-item-title uppercase mb-3 tracking-widest text-dns-primary" x-text="p.t"></h4>
+                    <p class="dns-eyebrow font-black uppercase tracking-[0.25em] text-dns-teal mb-4" x-text="p.where"></p>
+                    <p class="dns-item-desc font-light leading-relaxed opacity-80" x-text="p.d" x-show="activeProof === i"></p>
+                </button>
+            </template>
+        </div>
+        <div class="bg-dns-primary text-white p-12 rounded-[3.5rem] shadow-3xl border-l-[12px] border-dns-soft">
+            <p class="dns-detail-desc font-light leading-relaxed" x-html="content[lang].s6_conclusion"></p>
+        </div>
+    </section>
+
+    <!-- Slide 4: ARCHITETTURA STRATEGICA -->
+    <section id="slide-4" class="slide-section bg-white">
+        <h2 class="s-h2 s-h2-solo text-dns-primary" x-text="content[lang].s2_title"></h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div class="space-y-4">
+                <template x-for="(l, i) in content[lang].s2_layers">
+                    <div @click="activeLayer = i"
+                         class="premium-card p-6 rounded-[2.5rem] border-2 cursor-pointer transition-all flex items-center justify-between"
+                         :class="activeLayer === i ? 'active shadow-2xl' : 'bg-dns-bg border-dns-soft/10 text-dns-primary hover:border-dns-teal/30'">
+                        <div class="flex items-center space-x-6">
+                            <div class="p-3 rounded-2xl" :class="activeLayer === i ? 'bg-white/10' : 'bg-dns-primary/5'">
+                                <svg class="w-10 h-10 wf-icon" :class="activeLayer === i ? 'text-white' : 'text-dns-primary'" viewBox="0 0 24 24" x-html="l.icon"></svg>
+                            </div>
+                            <h4 class="font-black dns-item-title uppercase tracking-widest" x-text="l.title"></h4>
+                        </div>
+                        <span class="text-3xl font-black opacity-10" x-text="'0'+(i+1)"></span>
+                    </div>
+                </template>
+            </div>
+            <div class="bg-dns-deep text-white p-12 rounded-[3.5rem] shadow-2xl min-h-[450px] flex flex-col justify-center relative border-b-[12px] border-dns-soft">
+                <div class="absolute top-0 right-0 p-12 opacity-5">
+                    <svg class="w-40 h-40 wf-icon text-white" viewBox="0 0 24 24" x-html="content[lang].s2_layers[activeLayer].icon"></svg>
+                </div>
+                <h3 class="text-dns-soft font-black dns-detail-title mb-8 uppercase tracking-tighter" x-text="content[lang].s2_layers[activeLayer].title"></h3>
+                <p class="dns-detail-desc font-light leading-relaxed opacity-80" x-text="content[lang].s2_layers[activeLayer].desc"></p>
+                <div class="mt-10 pt-10 border-t border-white/10 flex items-center space-x-4">
+                    <div class="w-2 h-2 rounded-full bg-dns-soft animate-ping"></div>
+                    <span class="text-xs font-black uppercase tracking-[0.3em] text-dns-teal" x-text="content[lang].s2_layers[activeLayer].owner"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 5: IL PASS -->
+    <section id="slide-5" class="slide-section bg-dns-bg">
+        <h2 class="s-h2 text-dns-primary" x-text="content[lang].sT_title"></h2>
+        <p class="s-lead text-dns-teal" x-text="content[lang].sT_lead"></p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <template x-for="(c, i) in content[lang].sT_carriers">
+                <button @click="activeCarrier = i" class="p-10 rounded-[3rem] border-2 transition-all text-left"
+                        :class="activeCarrier === i ? 'bg-dns-primary text-white border-dns-primary shadow-3xl scale-[1.03]' : 'bg-white border-dns-soft/20 text-dns-primary opacity-70 hover:opacity-100'">
+                    <svg class="w-12 h-12 wf-icon mb-8" :class="activeCarrier === i ? 'text-dns-soft' : 'text-dns-primary'" viewBox="0 0 24 24" x-html="c.icon"></svg>
+                    <h4 class="font-black dns-item-title uppercase tracking-widest mb-3" x-text="c.t"></h4>
+                    <p class="dns-eyebrow font-black uppercase tracking-[0.25em] mb-5" :class="activeCarrier === i ? 'text-dns-soft' : 'text-dns-teal'" x-text="c.who"></p>
+                    <p class="dns-item-desc font-light leading-relaxed opacity-85" x-text="c.d" x-show="activeCarrier === i"></p>
+                </button>
+            </template>
+        </div>
+        <div class="mt-14 mb-12">
+            <p class="dns-eyebrow font-black uppercase tracking-[0.35em] text-dns-teal mb-8" x-text="content[lang].s3_title"></p>
+            <div class="relative flex flex-col md:flex-row items-center justify-between gap-8 md:gap-0">
+                <div class="absolute timeline-track w-full top-7 hidden md:block"></div>
+                <template x-for="(step, i) in content[lang].s3_steps">
+                    <div class="relative z-10 flex flex-col items-center w-full">
+                        <button @click="activeStep = i"
+                                class="w-14 h-14 rounded-full border-[3px] flex items-center justify-center transition-all step-node"
+                                :class="activeStep === i ? 'bg-dns-primary border-dns-primary scale-125' : 'bg-white border-dns-soft hover:border-dns-teal'">
+                            <svg class="w-6 h-6 wf-icon" :class="activeStep === i ? 'text-dns-soft' : 'text-dns-teal'" viewBox="0 0 24 24" x-html="step.icon"></svg>
+                        </button>
+                        <p class="mt-4 dns-eyebrow font-black uppercase tracking-widest text-center" :class="activeStep === i ? 'text-dns-primary' : 'text-dns-teal opacity-60'" x-text="step.label"></p>
+                    </div>
+                </template>
+            </div>
+            <p class="mt-8 dns-item-desc font-light leading-relaxed text-dns-primary opacity-85 max-w-4xl" x-text="content[lang].s3_steps[activeStep].detail"></p>
+        </div>
+        <div class="bg-dns-primary text-white p-12 rounded-[3.5rem] shadow-3xl border-l-[12px] border-dns-soft">
+            <p class="dns-detail-desc font-light leading-relaxed" x-html="content[lang].sT_freedom"></p>
+        </div>
+    </section>
+
+    <!-- Slide 6: GEOFENCING -->
+    <section id="slide-6" class="slide-section bg-white">
+        <h2 class="s-h2 s-h2-solo text-dns-primary" x-text="content[lang].s4_title"></h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            <div class="space-y-6">
+                <template x-for="(p, i) in content[lang].s4_points">
+                    <button @click="activeGeo = i" class="w-full flex items-start space-x-6 p-6 rounded-[2.5rem] border-2 transition-all text-left group"
+                            :class="activeGeo === i ? 'bg-dns-primary text-white border-dns-primary shadow-2xl' : 'bg-dns-bg border-dns-soft/10 text-dns-primary hover:border-dns-teal/40'">
+                        <div class="p-3 rounded-2xl transition-colors" :class="activeGeo === i ? 'bg-white/10' : 'bg-dns-primary/5 group-hover:bg-dns-teal/10'">
+                            <svg class="w-8 h-8 wf-icon flex-shrink-0" viewBox="0 0 24 24" x-html="p.icon"></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-black uppercase dns-item-title" x-text="p.t"></h4>
+                            <p class="dns-item-desc opacity-70 mt-2 font-light leading-snug" x-text="p.d" x-show="activeGeo === i"></p>
+                        </div>
+                    </button>
+                </template>
+            </div>
+            <div class="h-[500px] bg-dns-bg rounded-[3.5rem] relative flex items-center justify-center border border-dns-soft/20 shadow-2xl overflow-hidden">
+                <div class="geo-boundary w-80 h-80 rounded-full border-4 bg-dns-teal/5 relative flex items-center justify-center overflow-visible">
+                    <svg viewBox="0 0 320 320" class="absolute inset-0 w-full h-full overflow-visible pointer-events-none">
+                        <path id="geo-genesis-path" class="geo-genesis-path" pathLength="1"
+                              d="M 60,72 C 100,42 178,48 222,88 C 262,124 254,196 212,238 C 172,280 100,272 68,232 C 36,192 28,120 60,72 Z"/>
+                        <path d="M -20,60 C 80,95 120,140 160,160 C 200,180 260,215 340,255" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
+                        <path d="M -20,60 C 80,95 120,140 160,160 C 200,180 260,215 340,255" fill="none" stroke="#AAD0D1" stroke-width="3" stroke-dasharray="2 8" stroke-linecap="round"/>
+                    </svg>
+                    <div class="absolute inset-0 radar-rotate opacity-30"><div class="w-1/2 h-[2px] bg-gradient-to-l from-dns-soft to-transparent ml-auto"></div></div>
+                    <div class="geo-tracker">
+                        <div class="geo-tracker-badge on" x-text="content[lang].s4_badge_on"></div>
+                        <div class="geo-tracker-badge off" x-text="content[lang].s4_badge_off"></div>
+                        <div class="geo-tracker-pulse"></div>
+                        <div class="geo-tracker-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p class="mt-10 dns-eyebrow font-black uppercase tracking-[0.3em] text-dns-teal opacity-70" x-text="content[lang].s4_note"></p>
+    </section>
+
+    <!-- Slide 7: VALIDAZIONE ASSISTITA -->
+    <section id="slide-7" class="slide-section bg-dns-primary text-white">
+        <h2 class="s-h2 text-dns-soft" x-text="content[lang].s5_title"></h2>
+        <p class="s-lead text-white/60" x-text="content[lang].s5_lead"></p>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            <div class="space-y-5">
+                <template x-for="(f, i) in content[lang].s5_features">
+                    <button @click="activeControl = i" class="w-full flex items-center p-8 rounded-[2.5rem] border-l-[12px] transition-all text-left shadow-2xl"
+                            :class="activeControl === i ? 'bg-dns-deep border-dns-soft' : 'bg-dns-deep/30 border-transparent opacity-50 hover:opacity-100'">
+                        <svg class="w-10 h-10 text-dns-soft mr-6 wf-icon flex-shrink-0" viewBox="0 0 24 24" x-html="f.icon"></svg>
+                        <div>
+                            <h5 class="font-black dns-item-title uppercase tracking-widest mb-1" x-text="f.t"></h5>
+                            <p class="dns-item-desc opacity-60 leading-relaxed font-light" x-text="f.d" x-show="activeControl === i"></p>
+                        </div>
+                    </button>
+                </template>
+            </div>
+            <div class="flex justify-center">
+                <div class="w-80 h-[580px] bg-dns-deep rounded-[3.5rem] border-[14px] border-dns-bg shadow-[0_0_80px_rgba(0,0,0,0.5)] relative overflow-hidden p-8 flex flex-col">
+                    <div class="flex-1 bg-black/40 rounded-[2.5rem] relative overflow-hidden border border-dns-teal/30">
+                        <!-- wide geofence -->
+                        <div class="absolute inset-6 rounded-[2.5rem] border-2 border-dashed border-dns-teal/40"></div>
+                        <!-- narrow control point -->
+                        <div class="absolute left-1/2 -translate-x-1/2 bottom-16 w-24 h-24 rounded-full border-2 border-dns-soft/70 inspector-cone flex items-center justify-center">
+                            <svg class="w-8 h-8 text-dns-soft wf-icon" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        </div>
+                        <div class="gps-blip top-[18%] left-[28%]"></div>
+                        <div class="gps-blip top-[34%] right-[24%]"></div>
+                        <div class="gps-blip top-[52%] left-[46%]"></div>
+                    </div>
+                    <div class="mt-6 bg-dns-primary text-dns-soft p-4 rounded-2xl border border-dns-teal/20 text-[10px] font-black uppercase tracking-[0.2em] text-center" x-text="content[lang].s5_device"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 9: CLEARING & FINANCE -->
+    <section id="slide-8" class="slide-section bg-white">
+        <h2 class="s-h2 s-h2-solo text-dns-primary" x-text="content[lang].s7_title"></h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div class="space-y-6">
+                <template x-for="(f, i) in content[lang].s7_items">
+                    <button @click="activeFin = i" class="w-full p-10 rounded-[3rem] border-l-[12px] transition-all text-left shadow-2xl"
+                            :class="activeFin === i ? 'bg-dns-primary text-white border-dns-soft' : 'bg-dns-bg border-dns-soft/20 text-dns-primary opacity-60 hover:opacity-100'">
+                        <h4 class="font-black uppercase dns-item-title mb-4 tracking-widest" :class="activeFin === i ? 'text-dns-soft' : 'text-dns-deep'" x-text="f.t"></h4>
+                        <p class="dns-item-desc font-light leading-relaxed" x-text="f.d" x-show="activeFin === i"></p>
+                    </button>
+                </template>
+            </div>
+            <div class="bg-dns-deep p-16 rounded-[3.5rem] text-center text-white shadow-3xl border-[12px] border-white relative overflow-hidden">
+                <div class="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+                <svg class="w-24 h-24 text-dns-soft mx-auto mb-10 wf-icon" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <h4 class="dns-detail-title font-black mb-4 uppercase tracking-tighter">REST Shop-API</h4>
+                <p class="dns-eyebrow text-dns-soft/60 font-black uppercase tracking-[0.3em]" x-text="content[lang].s7_api"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 10: GOVERNANCE -->
+    <section id="slide-9" class="slide-section bg-dns-deep text-white">
+        <h2 class="s-h2 text-dns-soft" x-text="content[lang].s8_title"></h2>
+        <p class="s-lead text-white/50" x-text="content[lang].s8_lead"></p>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <template x-for="(item, i) in content[lang].s8_items">
+                <button @click="activeGov = i" class="p-10 rounded-[3rem] border-2 transition-all text-left relative overflow-hidden group" :class="activeGov === i ? 'bg-dns-primary border-dns-soft shadow-3xl scale-105' : 'bg-transparent border-dns-teal/20 opacity-50 hover:opacity-100'">
+                    <svg class="w-10 h-10 text-dns-soft mb-8 wf-icon" viewBox="0 0 24 24" x-html="item.icon"></svg>
+                    <h4 class="text-dns-soft font-black dns-item-title uppercase mb-5 tracking-widest" x-text="item.t"></h4>
+                    <p class="dns-item-desc opacity-80 leading-relaxed font-light" x-text="item.d" x-show="activeGov === i"></p>
+                </button>
+            </template>
+        </div>
+    </section>
+
+    <!-- Slide 11: SUCCESS FACTORS STAGE 0 -->
+    <section id="slide-10" class="slide-section bg-white">
+        <h2 class="s-h2 text-dns-primary" x-text="content[lang].s9_title"></h2>
+        <p class="s-lead text-dns-teal" x-text="content[lang].s9_lead"></p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <template x-for="(kpi, i) in content[lang].s9_kpis">
+                <button @click="activeKPI = i" class="p-10 rounded-[3rem] text-center border-2 transition-all group" :class="activeKPI === i ? 'bg-dns-primary text-white border-dns-primary shadow-3xl scale-105' : 'bg-dns-bg border-dns-soft/10 text-dns-primary opacity-60 hover:opacity-100'">
+                    <div class="w-16 h-16 mx-auto mb-8 rounded-2xl flex items-center justify-center transition-colors" :class="activeKPI === i ? 'bg-white/10' : 'bg-dns-primary/5 group-hover:bg-dns-teal/10'">
+                        <svg class="w-10 h-10 wf-icon" :class="activeKPI === i ? 'text-dns-soft' : 'text-dns-primary'" viewBox="0 0 24 24" x-html="kpi.icon"></svg>
+                    </div>
+                    <h5 class="font-black dns-item-title uppercase mb-4 tracking-widest" x-text="kpi.t"></h5>
+                    <p class="dns-item-desc leading-relaxed font-light opacity-80" x-text="kpi.d" x-show="activeKPI === i"></p>
+                </button>
+            </template>
+        </div>
+    </section>
+
+    <!-- Slide 12: ROADMAP -->
+    <section id="slide-11" class="slide-section bg-dns-soft text-dns-deep">
+        <h2 class="s-h2 text-center text-dns-deep" x-text="content[lang].s10_title"></h2>
+        <p class="s-lead text-center mx-auto opacity-70" x-text="content[lang].s10_lead"></p>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-7xl mx-auto w-full text-left">
+            <template x-for="(s, i) in content[lang].s10_stages">
+                <button @click="activeRoad = i" class="p-10 rounded-[3rem] border-2 transition-all text-left relative overflow-hidden" :class="activeRoad === i ? 'bg-white border-dns-primary shadow-3xl scale-105' : 'bg-white/30 border-dns-primary/5 opacity-50 hover:opacity-100'">
+                    <p class="dns-eyebrow font-black uppercase tracking-[0.3em] text-dns-teal mb-4" x-text="s.when"></p>
+                    <h4 class="dns-item-title font-black mb-5 uppercase text-dns-primary tracking-tighter" x-text="s.t"></h4>
+                    <p class="dns-item-desc font-light leading-relaxed opacity-80" x-text="s.d" x-show="activeRoad === i"></p>
+                </button>
+            </template>
+        </div>
+        <p class="mt-16 text-center font-black uppercase tracking-[0.5em] text-dns-primary dns-eyebrow opacity-60" x-text="content[lang].s10_loc"></p>
+    </section>
+
+    <!-- Slide 13: COSA APRE -->
+    <section id="slide-12" class="slide-section bg-white">
+        <h2 class="s-h2 text-dns-primary" x-text="content[lang].sO_title"></h2>
+        <p class="s-lead s-lead-tight text-dns-teal" x-text="content[lang].sO_lead"></p>
+        <!-- continuity bar -->
+        <div class="flex flex-col md:flex-row items-stretch gap-4 mb-14">
+            <template x-for="(c, i) in content[lang].sO_chain">
+                <div class="flex-1 p-8 rounded-[2.5rem] border-2 relative"
+                     :class="i === 1 ? 'bg-dns-primary text-white border-dns-primary shadow-2xl' : 'bg-dns-bg border-dns-soft/20 text-dns-primary'">
+                    <p class="dns-eyebrow font-black uppercase tracking-[0.3em] mb-3" :class="i === 1 ? 'text-dns-soft' : 'text-dns-teal'" x-text="c.step"></p>
+                    <h4 class="font-black dns-item-title uppercase tracking-widest mb-2" x-text="c.t"></h4>
+                    <p class="dns-item-desc font-light opacity-80" x-text="c.d"></p>
+                </div>
+            </template>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <template x-for="(g, i) in content[lang].sO_groups">
+                <button @click="activeOpp = i" class="p-10 rounded-[3rem] border-2 transition-all text-left"
+                        :class="activeOpp === i ? 'bg-dns-deep text-white border-dns-soft shadow-3xl scale-[1.03]' : 'bg-dns-bg border-dns-soft/20 text-dns-primary opacity-70 hover:opacity-100'">
+                    <p class="dns-eyebrow font-black uppercase tracking-[0.25em] mb-4" :class="activeOpp === i ? 'text-dns-soft' : 'text-dns-teal'" x-text="g.tag"></p>
+                    <h4 class="font-black dns-item-title uppercase tracking-widest mb-6" x-text="g.t"></h4>
+                    <ul class="space-y-3" x-show="activeOpp === i">
+                        <template x-for="p in g.points">
+                            <li class="dns-item-desc font-light leading-relaxed opacity-85 flex items-start">
+                                <span class="mr-3 mt-1.5 w-1.5 h-1.5 rounded-full bg-dns-soft flex-shrink-0"></span>
+                                <span x-text="p"></span>
+                            </li>
+                        </template>
+                    </ul>
+                </button>
+            </template>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-dns-primary text-white p-12 rounded-[3.5rem] shadow-3xl border-l-[12px] border-dns-soft">
+                <p class="dns-detail-desc font-light leading-relaxed" x-html="content[lang].sO_bridge"></p>
+            </div>
+            <div class="bg-dns-bg border-2 border-dns-soft/30 p-12 rounded-[3.5rem]">
+                <p class="dns-eyebrow font-black uppercase tracking-[0.3em] text-dns-teal mb-5" x-text="content[lang].sO_note_label"></p>
+                <p class="dns-item-desc font-light leading-relaxed text-dns-primary opacity-85" x-text="content[lang].sO_note"></p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function dnsDeck() {
+            return {
+                lang: 'de', activeLayer: 0, activeStep: 0, activeGeo: 0, activeControl: 0,
+                activeFin: 0, activeGov: 0, activeKPI: 0, activeRoad: 0, activeProof: 0, activePartner: 0, activeCarrier: 0, activeOpp: 0, activeProblem: 0,
+                activeSlide: 1, totalSlides: 12,
+                progress: 0, autoplay: false, autoTimer: null, autoMs: 15000,
+
+                init() {
+                    const sections = document.querySelectorAll('.slide-section[id^="slide-"]');
+                    this.totalSlides = sections.length;
+
+                    /* --- slide attiva --- */
+                    const nav = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                this.activeSlide = parseInt(entry.target.id.replace('slide-', ''));
+                            }
+                        });
+                    }, { rootMargin: '-50% 0px -50% 0px', threshold: 0 });
+                    sections.forEach(el => nav.observe(el));
+
+                    /* --- comparsa progressiva degli elementi --- */
+                    const rv = new IntersectionObserver((entries) => {
+                        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('rv-in'); rv.unobserve(e.target); } });
+                    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.08 });
+
+                    sections.forEach(sec => {
+                        let targets = Array.from(sec.children);
+                        // la prima slide ha un wrapper: scendi di un livello
+                        if (targets.length && targets.length <= 2 && targets[0].children.length > 2) {
+                            targets = Array.from(targets[0].children);
+                        }
+                        targets = targets.filter(el => !el.className || !String(el.className).includes('absolute'));
+                        targets.forEach((el, i) => {
+                            el.setAttribute('data-rv', '');
+                            el.style.setProperty('--rv-d', Math.min(i * 95, 480) + 'ms');
+                            rv.observe(el);
+                        });
+                    });
+
+                    /* --- genesi del confine: si disegna una sola volta all'ingresso nella slide Geofencing --- */
+                    const geoPath = document.getElementById('geo-genesis-path');
+                    const geoSlide = document.getElementById('slide-6');
+                    if (geoPath && geoSlide) {
+                        const go = new IntersectionObserver((entries) => {
+                            entries.forEach(e => { if (e.isIntersecting) { geoPath.classList.add('geo-drawn'); go.unobserve(e.target); } });
+                        }, { threshold: 0.35 });
+                        go.observe(geoSlide);
+                    }
+
+                    /* --- barra di avanzamento --- */
+                    const upd = () => {
+                        const h = document.documentElement.scrollHeight - window.innerHeight;
+                        this.progress = h > 0 ? Math.min(100, (window.scrollY / h) * 100) : 0;
+                    };
+                    window.addEventListener('scroll', upd, { passive: true });
+                    window.addEventListener('resize', upd);
+                    upd();
+
+                    /* --- tastiera --- */
+                    window.addEventListener('keydown', (e) => {
+                        if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+                            e.preventDefault(); this.stopAuto();
+                            this.goToSlide(Math.min(this.activeSlide + 1, this.totalSlides));
+                        } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+                            e.preventDefault(); this.stopAuto();
+                            this.goToSlide(Math.max(this.activeSlide - 1, 1));
+                        } else if (e.key === 'Escape') { this.stopAuto(); }
+                    });
+
+                    /* --- interazione manuale mette in pausa --- */
+                    ['wheel', 'touchstart', 'mousedown'].forEach(ev =>
+                        window.addEventListener(ev, () => { if (this.autoplay) this.stopAuto(); }, { passive: true })
+                    );
+                },
+
+                goToSlide(n) {
+                    document.getElementById('slide-' + n)?.scrollIntoView({ behavior: 'smooth' });
+                },
+
+                toggleAuto() { this.autoplay ? this.stopAuto() : this.startAuto(); },
+
+                startAuto() {
+                    this.autoplay = true;
+                    this.autoTimer = setInterval(() => {
+                        if (this.activeSlide >= this.totalSlides) { this.stopAuto(); return; }
+                        this.goToSlide(this.activeSlide + 1);
+                    }, this.autoMs);
+                },
+
+                stopAuto() {
+                    this.autoplay = false;
+                    if (this.autoTimer) { clearInterval(this.autoTimer); this.autoTimer = null; }
+                },
+                content: {
+                    /* ============================ ITALIANO ============================ */
+                    it: {
+                        s1_tag: "Project Scope & Strategy",
+                        s1_title: "DNS Digital <br>Infrastructure <span class='text-dns-soft'>Platform</span>",
+                        s1_desc: "L'obiettivo non è digitalizzare la vendita, ma l'infrastruttura. Una piattaforma per il controllo intelligente dell'accesso e la sovranità dei dati delle Smart Slopes.",
+
+
+                        sQ_title: "Il problema oggi",
+                        sQ_lead: "Prima di parlare di soluzioni, vale la pena guardare da dove partiamo.",
+                        sQ_points: [
+                            { icon: '<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>', t: "Tutto su carta", d: "Stampa, distribuzione, vendita frammentata sui punti vendita, riconciliazione manuale. Un lavoro che si ripete ogni stagione in otto regioni." },
+                            { icon: '<path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>', t: "Sappiamo cosa vendiamo, non chi scia", d: "Conosciamo i biglietti venduti. Non sappiamo quante persone sono effettivamente in pista, quando, né in quale zona. Le decisioni di rete si prendono su stime." },
+                            { icon: '<path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>', t: "Il controllo ferma tutti e intercetta pochi", d: "Il personale deve fermare ogni persona per verificare un pezzo di carta. È costoso, rallenta l'ospite, crea attrito — e intercetta comunque solo una frazione." },
+                            { icon: '<path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>', t: "Prodotti flessibili impossibili", d: "Mezza giornata, multi-day non consecutivi, tariffe di bassa stagione: sulla carta non sono gestibili. L'offerta resta rigida perché lo strumento è rigido." }
+                        ],
+                        sQ_root: "La ragione strutturale è una sola: <strong class='text-dns-soft'>le piste costano manutenzione ogni giorno, ma l'accesso non è di fatto controllabile.</strong> Non è un problema di DNS — è il problema di tutta l'infrastruttura outdoor senza tornelli.",
+
+                        s2_title: "Architettura Federata",
+                        s2_layers: [
+                            { icon: '<path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5"/>', title: "1. Commerce", owner: "LTS · Regioni", desc: "Gestito da LTS TIC-Web. Vendita, incasso e IVA restano alle regioni. Il fornitore tecnologico non tocca mai il flusso finanziario." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', title: "2. Identity", owner: "Fornitore tecnologico", desc: "Digital Pass pseudonimizzato. Separazione netta fra identità (che resta a LTS e alle regioni) e diritto d'accesso." },
+                            { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', title: "3. Infrastructure", owner: "DNS · General Solutions", desc: "Geofencing e Infrastructure Session. La geometria dei confini viene generata dai GPX delle regioni da General Solutions sulla piattaforma Contwise Maps e fornita via interfaccia GeoJSON. Resta fuori dallo stack del fornitore di ticketing." },
+                            { icon: '<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2"/>', title: "4. Intelligence", owner: "DNS Sovereignty", desc: "Analytics aggregata e Destination Intelligence per decisioni di rete basate su dati di afflusso reali." }
+                        ],
+
+                        s3_title: "Ciclo di Vita / Sessione",
+                        s3_stepword: "Fase",
+                        s3_steps: [
+                            { icon: '<path d="M3 3h18v18H3zM3 9h18"/>', label: "Acquisto", detail: "Acquisto online tramite LTS. L'incasso resta alle regioni, il sistema riceve solo l'evento di vendita." },
+                            { icon: '<path d="M12 2v20M2 12h20"/>', label: "Arrivo", detail: "L'utente arriva nel comprensorio con il pass già caricato nell'app." },
+                            { icon: '<path d="M11 19l-7-7 7-7"/>', label: "Ingresso", detail: "L'ingresso nel geofence viene rilevato e prepara l'apertura della sessione." },
+                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', label: "Sessione", detail: "Si apre la Infrastructure Session: è la finestra che delimita legalmente il trattamento dei dati di posizione." },
+                            { icon: '<path d="M13 5l7 7-7 7"/>', label: "Uscita", detail: "Uscendo dall'area la sessione si chiude automaticamente: privacy e risparmio batteria." },
+                            { icon: '<path d="M5 3v18l15-9z"/>', label: "Fine", detail: "I dati confermati vengono aggregati in forma anonima per le statistiche di rete." }
+                        ],
+
+
+                        sT_title: "Il pass e la libertà di scelta",
+                        sT_lead: "Il codice è uno, il contenitore lo sceglie l'ospite. La validazione funziona in tutti i casi: cambia solo il modo.",
+                        sT_carriers: [
+                            { icon: '<path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>', t: "App DNS", who: "Stagionali · settimanali", d: "Per chi vuole il resto: attivazione automatica della sessione, validazione senza fermarsi, statistiche personali e, in futuro, servizi agganciati al pass." },
+                            { icon: '<path d="M3 10h18M7 15h.01M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>', t: "Wallet digitale", who: "Chi non vuole l'app", d: "Il QR nel wallet del telefono, come un biglietto qualsiasi. Nessuna app, nessun GPS, nessun tracciamento. Il controllore ferma e scansiona." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', t: "Carte ospite esistenti", who: "Turisti · fase successiva", d: "Il pass viaggia su un supporto che l'ospite ha già in tasca. Richiede l'accordo con il gestore della carta: prospettiva, non pilota." }
+                        ],
+                        sT_freedom: "<strong class='text-dns-soft'>Nessuno è costretto ad accettare il tracciamento per sciare.</strong> Il GPS è ciò che si riceve in cambio di comodità — validazione senza fermarsi, statistiche, servizi — non una condizione d'accesso. In entrambi i casi la validazione la fa il controllore.",
+
+                        sO_title: "Cosa apre",
+                        sO_lead: "Non è un progetto nuovo. È il livello successivo di E-DNS: stessa rete, stessi partner, stessa mappa. Sopra ci mettiamo l'accesso e i dati.",
+                        sO_chain: [
+                            { step: "Fatto", t: "E-DNS", d: "Mappa condivisa e comunicazione delle otto regioni." },
+                            { step: "Adesso", t: "Smart Slopes", d: "Accesso digitale e dati d'uso reali sulla stessa mappa." },
+                            { step: "Poi", t: "Servizi", d: "Valore per l'ospite e ricavi per le regioni sullo stesso pass." }
+                        ],
+                        sO_groups: [
+                            { tag: "Subito · quasi certo", t: "Dentro la rete", points: [
+                                "Fine della carta: stampa, distribuzione, riconciliazione",
+                                "Dati d'uso reali per regione: il modello FAIR alimentato da misure invece che da stime",
+                                "Controllo più rapido e meno conflittuale: si ferma solo chi non risulta",
+                                "Sicurezza: sapere in tempo reale che qualcuno è in pista"
+                            ]},
+                            { tag: "Plausibile · qui sta il denaro", t: "Ricavi per le regioni", points: [
+                                "Prodotti impossibili sulla carta: mezza giornata, multi-day, bassa stagione, prima traccia",
+                                "Servizi agganciati al pass: armadietti, noleggio, scuola sci, ristorazione",
+                                "Il ricavo resta alla regione e al partner locale, DNS fornisce la capacità tecnica",
+                                "Estensione estiva dove esiste una prestazione: trail manutenuti, non sentieri liberi"
+                            ]},
+                            { tag: "Strategico · da costruire", t: "Ritorno per DNS", points: [
+                                "DNS non vende software e non incassa dai biglietti: non ne ha la struttura né il ruolo",
+                                "Ciò che DNS possiede è il disegno del sistema",
+                                "Se il disegno viene riusato fuori dalla rete, DNS partecipa con una quota o condizioni preferenziali",
+                                "La replicabilità è precisamente ciò che i programmi europei finanziano"
+                            ]}
+                        ],
+                        sO_bridge: "Il valore economico potenziale andrà verificato attraverso dati reali, benchmark e una valutazione dei costi operativi. Nessun ricavo futuro è garantito.",
+                        sO_note_label: "Una precisazione necessaria",
+                        sO_note: "Le fasi successive saranno decise solo dopo l'analisi del test di fattibilità e una separata valutazione economica.",
+                        s4_title: "Geofencing Operativo",
+                        s4_badge_on: "Sessione attiva",
+                        s4_badge_off: "Nessun trattamento",
+                        s4_note: "La geometria dei confini arriva da General Solutions · Contwise Maps e non cambia mai automaticamente",
+                        s4_points: [
+                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', t: "Attivazione automatica", d: "La sessione si apre e si chiude all'ingresso e all'uscita dal perimetro. Nessuna azione richiesta all'utente." },
+                            { icon: '<path d="M12 8v4l3 3"/>', t: "Consumo batteria", d: "È la variabile critica da misurare: campionamento da ottimizzare per freddo e giornate lunghe." },
+                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Base giuridica", d: "La sessione delimita il perimetro legale del trattamento dei dati di posizione." },
+                            { icon: '<path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>', t: "Geometria da Contwise Maps", d: "I poligoni sono generati dai GPX delle regioni da General Solutions sulla piattaforma Contwise Maps e forniti tramite interfaccia GeoJSON già esistente, insieme allo stato di battitura in tempo reale. Restano di DNS e delle regioni." }
+                        ],
+
+                        s5_title: "Validazione Assistita",
+                        s5_lead: "Il geofence non è un tornello automatico: stabilisce una presunzione di presenza. Il record ufficiale nasce quando il controllore conferma.",
+                        s5_device: "Vista controllore · pass attivi nelle vicinanze",
+                        s5_features: [
+                            { icon: '<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>', t: "Presunzione", d: "Il sistema segnala i pass attivi nell'area. È un'indicazione, non ancora una validazione." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', t: "Conferma umana", d: "Il controllore, posizionato in un punto stretto della pista, conferma nell'app. Solo allora il dato diventa ufficiale." },
+                            { icon: '<path d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z"/>', t: "Falsi positivi ininfluenti", d: "Chi si trova nell'area senza sciare non viene mai confermato: nessun addebito errato, anche con un geofence largo." },
+                            { icon: '<path d="M12 4v1m6 11h2M4 16H2m14.24-6.24l1.42-1.42M6.34 9.76L4.92 8.34"/>', t: "Fallback QR", d: "In assenza di rete o per chi rinuncia alla localizzazione resta il controllo QR offline." },
+                            { icon: '<path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 9v1m0-9c-1.11 0-2.08.402-2.599 1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>', t: "Vendita in pista", d: "Se il controllore trova qualcuno senza pass, lo emette e lo incassa dallo stesso telefono — pagamento tramite link sulla piattaforma di vendita esistente, con i contanti come rete di sicurezza offline. Il prezzo in pista prevede un supplemento, deciso dalla regione." }
+                        ],
+
+                        s6_title: "Non è un esperimento",
+                        s6_lead: "I singoli componenti sono già in esercizio altrove. Nuova è la loro combinazione e l'applicazione a un'infrastruttura senza tornelli.",
+                        s6_proofs: [
+                            { icon: '<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>', t: "Pass digitale", where: "Svizzera · dal 2017/18", d: "Circa 120 organizzazioni di piste da fondo usano un pass digitale con validazione da parte del personale di controllo." },
+                            { icon: '<path d="M5 12h14M12 5l7 7-7 7"/>', t: "Ticketing digitale", where: "Trentino · dal 2022", d: "Un centro fondo vicino a noi usa il ticketing digitale, ma con hardware RFID: l'approccio che abbiamo deliberatamente scartato." },
+                            { icon: '<path d="M12 2a10 10 0 100 20 10 10 0 000-20zM2 12h20M12 2a15 15 0 010 20 15 15 0 010-20z"/>', t: "Geofence come trigger", where: "7 paesi UE · oltre 10 anni", d: "Il pedaggio satellitare per i mezzi pesanti addebita al passaggio di confini virtuali, senza infrastruttura a bordo strada." }
+                        ],
+                        s6_conclusion: "Lo sci alpino ha risolto l'accesso a pagamento con i <strong>tornelli agli impianti</strong>. Tutto ciò che non ha un collo di bottiglia fisico — fondo, trail manutenuti, aree naturali gestite — non ha mai avuto una risposta. <strong class='text-dns-soft'>È esattamente lì che si colloca il nostro approccio.</strong>",
+
+
+                        s7_title: "Clearing & LTS",
+                        s7_api: "Sincronizzazione unidirezionale in ingresso",
+                        s7_items: [
+                            { t: "Flusso finanziario", d: "LTS agisce da intermediario con diritto d'incasso: incassa, trattiene l'8% e liquida alle regioni entro il 10 del mese successivo. DNS e il fornitore non toccano mai il denaro." },
+                            { t: "Sovranità dei dati", d: "Separazione netta: LTS e le regioni conservano l'identità, il fornitore tecnologico riceve solo un codice pseudonimo (Digital Pass ID)." },
+                            { t: "Incognita da negoziare", d: "Non è ancora chiarito se l'accesso alle interfacce tecniche sia compreso nell'6% di commissione. Ininfluente per il test di fattibilità, rilevante a regime." }
+                        ],
+
+                        s8_title: "Governance & Tutela",
+                        s8_lead: "Condizioni da fissare prima che venga scritta una riga di codice: dopo diventano difficilissime da cambiare.",
+                        s8_items: [
+                            { icon: '<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>', t: "Proprietà IP", d: "Sugli sviluppi commissionati da DNS: proprietà oppure licenza perpetua, irrevocabile, trasferibile e senza royalty, che sopravvive alla cessazione. La piattaforma base resta del fornitore. Il preventivo Stage 0 lo riconosce già per iscritto: architettura, modello a quattro livelli e pseudonimizzazione sono espressamente attribuiti a DNS." },
+                            { icon: '<path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>', t: "Dati e portabilità", d: "DNS è titolare dei dati, con export completo in formato aperto e documentato in caso di uscita. Sul lato cartografico il punto è già risolto: in Contwise Maps i diritti sui dati restano interamente del cliente, che decide licenze, condivisione e canali." },
+                            { icon: '<path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>', t: "Account store", d: "Gli account App Store e Google Play sono intestati a DNS, con il fornitore come sviluppatore delegato. L'app resta nostra." },
+                            { icon: '<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>', t: "Continuità", d: "Deposito del codice sorgente, notifica in caso di cambio di controllo e tetto ai prezzi: obbligatori per la fase di produzione." }
+                        ],
+
+                        s9_title: "Cosa deve dimostrare il test",
+                        s9_lead: "Il test di fattibilità serve a rispondere a quattro domande, non a costruire un prodotto.",
+                        s9_kpis: [
+                            { icon: '<path d="M5 13l4 4L19 7"/>', t: "Approvazione store", d: "L'app viene approvata su iOS e Android con accesso alla posizione in background? Non è scontato." },
+                            { icon: '<path d="M12 8v4l3 3"/>', t: "Batteria", d: "Quale intervallo GPS produce dati utili senza svuotare la batteria in una giornata d'inverno? È la variabile che decide tutto." },
+                            { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', t: "Affidabilità geofence", d: "Il rilevamento funziona in condizioni reali: freddo, copertura arborea, terreno effettivo." },
+                            { icon: '<path d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z"/>', t: "Vincoli imprevisti", d: "Quali limiti emergono sul campo che non erano visibili in fase di progettazione — è il punto che nessun documento può anticipare." }
+                        ],
+
+                        s10_title: "Percorso a stadi",
+                        s10_lead: "Una decisione per volta, ognuna piccola e reversibile. Il ritmo lo detta la stagione: uno stadio per inverno.",
+                        s10_loc: "Regione pilota da confermare",
+                        s10_stages: [
+                            { when: "Inverno 2026-27", t: "Stage 0 · Fattibilità", d: "Kick-off a ottobre 2026: build minimale su pochi dispositivi fino a dicembre, poi submission agli app store e test sul campo a Planica tra dicembre e gennaio. Nessuna app rifinita, nessun utente reale. Risultato: report con misure documentate e workshop DNS a febbraio 2027." },
+                            { when: "Primavera 2027", t: "Valutazione", d: "Analisi dei risultati, risposta alla domanda sui costi di esercizio e, se il quadro regge, preparazione di una candidatura per un finanziamento europeo." },
+                            { when: "Inverno 2027-28", t: "Stage 1 · Beta", d: "Beta con utenti reali: una regione, un tipo di biglietto, circa 50 tester. Solo se lo Stage 0 ha dato esito positivo." },
+                            { when: "Dal 2028", t: "Fase 2 · Produzione", d: "Estensione multi-regione, integrazione bidirezionale e servizi aggiuntivi agganciati al pass." }
+                        ],
+
+                    },
+
+                    /* ============================ DEUTSCH ============================ */
+                    de: {
+                        s1_tag: "Project Scope & Strategy",
+                        s1_title: "DNS Digitale <br>Infrastruktur-<span class='text-dns-soft'>Plattform</span>",
+                        s1_desc: "Ziel ist nicht die Digitalisierung des Verkaufs, sondern der Infrastruktur. Eine Plattform für intelligente Zugangssteuerung und Datenhoheit der Smart Slopes.",
+
+
+                        sQ_title: "Die heutige Ausgangslage",
+                        sQ_lead: "Bevor wir über Lösungen sprechen, lohnt sich ein Blick darauf, wo wir stehen.",
+                        sQ_points: [
+                            { icon: '<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>', t: "Alles auf Papier", d: "Druck, Verteilung, verstreuter Verkauf an den Verkaufsstellen, manuelle Abrechnung. Eine Arbeit, die sich jede Saison in acht Regionen wiederholt." },
+                            { icon: '<path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>', t: "Wir wissen, was wir verkaufen — nicht, wer läuft", d: "Wir kennen die verkauften Tickets. Wir wissen nicht, wie viele Personen tatsächlich auf der Loipe sind, wann und in welchem Bereich. Netzentscheidungen beruhen auf Schätzungen." },
+                            { icon: '<path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>', t: "Die Kontrolle hält alle an und erfasst wenige", d: "Das Personal muss jede Person anhalten, um ein Stück Papier zu prüfen. Das kostet, bremst den Gast, erzeugt Reibung — und erfasst dennoch nur einen Bruchteil." },
+                            { icon: '<path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>', t: "Flexible Produkte unmöglich", d: "Halbtag, nicht zusammenhängende Mehrtagespässe, Nebensaisontarife: auf Papier nicht handhabbar. Das Angebot bleibt starr, weil das Instrument starr ist." }
+                        ],
+                        sQ_root: "Der strukturelle Grund ist ein einziger: <strong class='text-dns-soft'>Die Loipen kosten täglich Pflege, doch der Zugang ist faktisch nicht kontrollierbar.</strong> Das ist kein DNS-Problem — es ist das Problem jeder Outdoor-Infrastruktur ohne Drehkreuze.",
+
+                        s2_title: "Föderierte Architektur",
+                        s2_layers: [
+                            { icon: '<path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5"/>', title: "1. Commerce", owner: "LTS · Regionen", desc: "Über LTS TIC-Web verwaltet. Verkauf, Inkasso und MwSt. bleiben bei den Regionen. Der Technologiepartner berührt den Zahlungsfluss nie." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', title: "2. Identität", owner: "Technologiepartner", desc: "Pseudonymisierter Digital Pass. Strikte Trennung zwischen Identität — die bei LTS und den Regionen bleibt — und Zutrittsrecht." },
+                            { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', title: "3. Infrastruktur", owner: "DNS · General Solutions", desc: "Geofencing und Infrastruktur-Sitzung. Die Geometrie der Grenzen wird aus den GPX-Daten der Regionen von General Solutions auf der Plattform Contwise Maps erzeugt und über eine GeoJSON-Schnittstelle bereitgestellt. Sie bleibt außerhalb des Stacks des Ticketing-Anbieters." },
+                            { icon: '<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2"/>', title: "4. Intelligence", owner: "DNS Datenhoheit", desc: "Aggregierte Analytics und Destination Intelligence für Netzentscheidungen auf Basis realer Frequenzdaten." }
+                        ],
+
+                        s3_title: "Lebenszyklus / Sitzung",
+                        s3_stepword: "Schritt",
+                        s3_steps: [
+                            { icon: '<path d="M3 3h18v18H3zM3 9h18"/>', label: "Kauf", detail: "Online-Kauf über LTS. Die Einnahmen bleiben bei den Regionen, das System erhält nur das Verkaufsereignis." },
+                            { icon: '<path d="M12 2v20M2 12h20"/>', label: "Ankunft", detail: "Der Gast kommt im Gebiet an, der Pass ist bereits in der App hinterlegt." },
+                            { icon: '<path d="M11 19l-7-7 7-7"/>', label: "Eintritt", detail: "Das Betreten des Geofence wird erkannt und bereitet die Sitzung vor." },
+                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', label: "Sitzung", detail: "Die Infrastruktur-Sitzung öffnet sich: Sie begrenzt rechtlich die Verarbeitung der Standortdaten." },
+                            { icon: '<path d="M13 5l7 7-7 7"/>', label: "Austritt", detail: "Beim Verlassen des Gebiets endet die Sitzung automatisch — Datenschutz und Akkuschonung." },
+                            { icon: '<path d="M5 3v18l15-9z"/>', label: "Ende", detail: "Bestätigte Daten werden anonymisiert für die Netzstatistik aggregiert." }
+                        ],
+
+
+                        sT_title: "Der Pass und die Wahlfreiheit",
+                        sT_lead: "Der Code ist einer, den Träger wählt der Gast. Die Validierung funktioniert in allen Fällen — nur die Art unterscheidet sich.",
+                        sT_carriers: [
+                            { icon: '<path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>', t: "DNS-App", who: "Saison- und Wochenpässe", d: "Für alle, die mehr wollen: automatischer Sitzungsstart, Kontrolle ohne Anhalten, persönliche Statistiken und künftig Zusatzdienste rund um den Pass." },
+                            { icon: '<path d="M3 10h18M7 15h.01M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>', t: "Digitale Wallet", who: "Wer keine App will", d: "Der QR-Code in der Wallet des Telefons, wie jedes andere Ticket. Keine App, kein GPS, keine Ortung. Das Kontrollpersonal hält an und scannt." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', t: "Bestehende Gästekarten", who: "Gäste · spätere Stufe", d: "Der Pass läuft auf einem Träger, den der Gast bereits hat. Erfordert eine Vereinbarung mit dem Kartenbetreiber: Perspektive, nicht Pilot." }
+                        ],
+                        sT_freedom: "<strong class='text-dns-soft'>Niemand muss Ortung akzeptieren, um Langlaufen zu gehen.</strong> Das GPS ist das, was man im Tausch gegen Komfort erhält — Kontrolle ohne Anhalten, Statistiken, Dienste — keine Zugangsvoraussetzung. In beiden Fällen validiert das Kontrollpersonal.",
+
+                        sO_title: "Was sich öffnet",
+                        sO_lead: "Kein neues Projekt, sondern die nächste Ebene von E-DNS: dasselbe Netz, dieselben Partner, dieselbe Karte. Darauf setzen wir Zugang und Daten.",
+                        sO_chain: [
+                            { step: "Erledigt", t: "E-DNS", d: "Gemeinsame Karte und Kommunikation der acht Regionen." },
+                            { step: "Jetzt", t: "Smart Slopes", d: "Digitaler Zugang und reale Nutzungsdaten auf derselben Karte." },
+                            { step: "Danach", t: "Services", d: "Mehrwert für den Gast und Einnahmen für die Regionen auf demselben Pass." }
+                        ],
+                        sO_groups: [
+                            { tag: "Sofort · nahezu sicher", t: "Innerhalb des Netzes", points: [
+                                "Ende der Papierkarte: Druck, Verteilung, Abrechnung",
+                                "Reale Nutzungsdaten je Region: das FAIR-Modell auf Messwerten statt Schätzungen",
+                                "Schnellere, konfliktärmere Kontrolle: angehalten wird nur, wer nicht erscheint",
+                                "Sicherheit: in Echtzeit wissen, dass jemand auf der Loipe ist"
+                            ]},
+                            { tag: "Plausibel · hier liegt das Geld", t: "Einnahmen für die Regionen", points: [
+                                "Produkte, die auf Papier unmöglich sind: Halbtag, Multi-Day, Nebensaison, erste Spur",
+                                "Dienste am Pass: Schließfächer, Verleih, Skischule, Gastronomie",
+                                "Die Einnahmen bleiben bei Region und lokalem Partner, DNS liefert die technische Grundlage",
+                                "Sommererweiterung, wo eine Leistung erkennbar ist: gepflegte Trails, keine freien Wanderwege"
+                            ]},
+                            { tag: "Strategisch · aufzubauen", t: "Rückfluss für DNS", points: [
+                                "DNS verkauft keine Software und kassiert nicht aus Tickets: dafür fehlen Struktur und Rolle",
+                                "Was DNS besitzt, ist der Entwurf des Systems",
+                                "Wird der Entwurf außerhalb des Netzes wiederverwendet, beteiligt sich DNS über eine Quote oder Vorzugskonditionen",
+                                "Übertragbarkeit ist genau das, was europäische Programme fördern"
+                            ]}
+                        ],
+                        sO_bridge: "Der mögliche wirtschaftliche Mehrwert muss anhand realer Nutzungsdaten, belastbarer Benchmarks und einer Prüfung der Betriebskosten bewertet werden. Künftige Einnahmen sind nicht garantiert.",
+                        sO_note_label: "Eine notwendige Klarstellung",
+                        sO_note: "Über weitere Entwicklungsschritte wird erst nach Auswertung des Machbarkeitstests und einer gesonderten wirtschaftlichen Prüfung entschieden.",
+                        s4_title: "Operatives Geofencing",
+                        s4_badge_on: "Sitzung aktiv",
+                        s4_badge_off: "Keine Verarbeitung",
+                        s4_note: "Die Geometrie der Grenzen kommt von General Solutions · Contwise Maps und ändert sich nie automatisch",
+                        s4_points: [
+                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', t: "Automatische Aktivierung", d: "Die Sitzung öffnet und schließt beim Betreten und Verlassen des Perimeters. Der Gast muss nichts tun." },
+                            { icon: '<path d="M12 8v4l3 3"/>', t: "Akkuverbrauch", d: "Die kritische Messgröße: Das Sampling muss für Kälte und lange Tage optimiert werden." },
+                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Rechtsgrundlage", d: "Die Sitzung begrenzt den rechtlichen Rahmen der Standortdatenverarbeitung." },
+                            { icon: '<path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>', t: "Geometrie aus Contwise Maps", d: "Die Polygone werden aus den GPX-Daten der Regionen von General Solutions auf Contwise Maps erzeugt und über eine bereits bestehende GeoJSON-Schnittstelle bereitgestellt, zusammen mit dem Präparierungsstand in Echtzeit. Sie bleiben bei DNS und den Regionen." }
+                        ],
+
+                        s5_title: "Assistierte Kontrolle",
+                        s5_lead: "Der Geofence ist kein automatisches Drehkreuz: Er begründet eine Anwesenheitsvermutung. Der offizielle Datensatz entsteht erst durch die Bestätigung des Kontrollpersonals.",
+                        s5_device: "Kontrollansicht · aktive Pässe in der Nähe",
+                        s5_features: [
+                            { icon: '<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>', t: "Vermutung", d: "Das System zeigt aktive Pässe im Gebiet an. Das ist ein Hinweis, noch keine Validierung." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', t: "Menschliche Bestätigung", d: "Das Kontrollpersonal steht an einer Engstelle der Loipe und bestätigt in der App. Erst dann wird der Datensatz offiziell." },
+                            { icon: '<path d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z"/>', t: "Fehlalarme irrelevant", d: "Wer sich im Gebiet aufhält, ohne Ski zu laufen, wird nie bestätigt: keine falsche Belastung, auch bei weitem Geofence." },
+                            { icon: '<path d="M12 4v1m6 11h2M4 16H2m14.24-6.24l1.42-1.42M6.34 9.76L4.92 8.34"/>', t: "QR-Rückfallebene", d: "Ohne Netz oder bei Verzicht auf Ortung bleibt die Offline-Kontrolle per QR-Code." },
+                            { icon: '<path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 9v1m0-9c-1.11 0-2.08.402-2.599 1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>', t: "Verkauf auf der Loipe", d: "Findet das Kontrollpersonal jemanden ohne Pass, wird dieser vom selben Telefon aus ausgestellt und kassiert — Zahlung per Link über die bestehende Verkaufsplattform, Bargeld als Offline-Rückfallebene. Der Preis vor Ort enthält einen Aufschlag, den die Region festlegt." }
+                        ],
+
+                        s6_title: "Kein Experiment",
+                        s6_lead: "Die einzelnen Bausteine sind anderswo im Regelbetrieb. Neu ist ihre Kombination und die Anwendung auf eine Infrastruktur ohne Drehkreuze.",
+                        s6_proofs: [
+                            { icon: '<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>', t: "Digitaler Pass", where: "Schweiz · seit 2017/18", d: "Rund 120 Loipenorganisationen nutzen einen digitalen Pass mit Kontrolle durch Aufsichtspersonal." },
+                            { icon: '<path d="M5 12h14M12 5l7 7-7 7"/>', t: "Digitales Ticketing", where: "Trentino · seit 2022", d: "Ein Langlaufzentrum in unserer Nähe nutzt digitales Ticketing, allerdings mit RFID-Hardware — dem Ansatz, den wir bewusst nicht wählen." },
+                            { icon: '<path d="M12 2a10 10 0 100 20 10 10 0 000-20zM2 12h20M12 2a15 15 0 010 20 15 15 0 010-20z"/>', t: "Geofence als Auslöser", where: "7 EU-Länder · über 10 Jahre", d: "Die satellitengestützte LKW-Maut rechnet beim Passieren virtueller Grenzen ab, ganz ohne Infrastruktur am Straßenrand." }
+                        ],
+                        s6_conclusion: "Der alpine Skisport hat den bezahlten Zugang über <strong>Drehkreuze an den Liften</strong> gelöst. Alles ohne physischen Engpass — Loipen, gepflegte Trails, betreute Naturräume — hatte bisher keine Antwort. <strong class='text-dns-soft'>Genau dort setzt unser Ansatz an.</strong>",
+
+
+                        s7_title: "Clearing & LTS",
+                        s7_api: "Unidirektionale eingehende Synchronisation",
+                        s7_items: [
+                            { t: "Zahlungsfluss", d: "LTS agiert als Vermittler mit Inkassorecht: kassiert, behält 8 % ein und zahlt bis zum 10. des Folgemonats an die Regionen aus. DNS und der Anbieter berühren das Geld nie." },
+                            { t: "Datenhoheit", d: "Strikte Trennung: LTS und die Regionen halten die Identität, der Technologiepartner erhält nur einen pseudonymen Code (Digital Pass ID)." },
+                            { t: "Zu verhandeln", d: "Noch offen ist, ob der Zugang zu den technischen Schnittstellen in den 6 % Provision enthalten ist. Für den Machbarkeitstest unerheblich, im Vollbetrieb relevant." }
+                        ],
+
+                        s8_title: "Governance & Absicherung",
+                        s8_lead: "Bedingungen, die vor der ersten Zeile Code zu klären sind — danach lassen sie sich kaum noch ändern.",
+                        s8_items: [
+                            { icon: '<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>', t: "IP-Eigentum", d: "Für von DNS beauftragte Entwicklungen: Eigentum oder eine unbefristete, unwiderrufliche, übertragbare und lizenzgebührenfreie Lizenz, die die Vertragsbeendigung überdauert. Die Kernplattform bleibt beim Anbieter. Das Stufe-0-Angebot erkennt dies bereits schriftlich an: Architektur, Vier-Schichten-Modell und Pseudonymisierung werden ausdrücklich DNS zugeschrieben." },
+                            { icon: '<path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>', t: "Daten & Portabilität", d: "DNS ist Eigentümerin der Daten, mit vollständigem Export in einem offenen, dokumentierten Format im Falle eines Ausstiegs. Auf kartografischer Seite ist der Punkt bereits gelöst: Bei Contwise Maps verbleiben die Datenrechte vollständig beim Kunden, der über Lizenzen, Weitergabe und Kanäle entscheidet." },
+                            { icon: '<path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>', t: "Store-Konten", d: "Die App-Store- und Google-Play-Konten laufen auf DNS, der Anbieter arbeitet als beauftragter Entwickler. Die App bleibt unsere." },
+                            { icon: '<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>', t: "Kontinuität", d: "Quellcode-Hinterlegung, Meldepflicht bei Kontrollwechsel und Preisdeckelung: verbindlich für die Produktionsphase." }
+                        ],
+
+                        s9_title: "Was der Test beweisen muss",
+                        s9_lead: "Der Machbarkeitstest dient dazu, vier Fragen zu beantworten — nicht dazu, ein Produkt zu bauen.",
+                        s9_kpis: [
+                            { icon: '<path d="M5 13l4 4L19 7"/>', t: "Store-Zulassung", d: "Wird die App auf iOS und Android mit Standortzugriff im Hintergrund zugelassen? Das ist keineswegs selbstverständlich." },
+                            { icon: '<path d="M12 8v4l3 3"/>', t: "Akku", d: "Welches GPS-Intervall liefert brauchbare Daten, ohne den Akku an einem Wintertag zu leeren? Das ist die Variable, die alles entscheidet." },
+                            { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', t: "Zuverlässigkeit", d: "Funktioniert die Erkennung unter realen Bedingungen: Kälte, Baumbestand, tatsächliches Gelände." },
+                            { icon: '<path d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z"/>', t: "Unerwartete Einschränkungen", d: "Welche Grenzen zeigen sich im Feld, die in der Planung nicht sichtbar waren — der Punkt, den kein Dokument vorwegnehmen kann." }
+                        ],
+
+                        s10_title: "Stufenweiser Weg",
+                        s10_lead: "Eine Entscheidung nach der anderen, jede klein und umkehrbar. Den Rhythmus gibt die Saison vor: eine Stufe pro Winter.",
+                        s10_loc: "Pilotregion noch zu bestätigen",
+                        s10_stages: [
+                            { when: "Winter 2026-27", t: "Stufe 0 · Machbarkeit", d: "Kick-off im Oktober 2026: minimaler Aufbau auf wenigen Geräten bis Dezember, danach Einreichung in den App-Stores und Feldtest in Planica zwischen Dezember und Januar. Keine fertige App, keine echten Nutzer. Ergebnis: Bericht mit belastbaren Messwerten und DNS-Workshop im Februar 2027." },
+                            { when: "Frühjahr 2027", t: "Auswertung", d: "Analyse der Ergebnisse, Antwort auf die Frage der laufenden Kosten und, sofern das Bild trägt, Vorbereitung eines europäischen Förderantrags." },
+                            { when: "Winter 2027-28", t: "Stufe 1 · Beta", d: "Beta mit echten Nutzern: eine Region, ein Tarif, rund 50 Testpersonen. Nur wenn Stufe 0 erfolgreich war." },
+                            { when: "Ab 2028", t: "Phase 2 · Produktion", d: "Ausweitung auf mehrere Regionen, bidirektionale Integration und Zusatzdienste rund um den Pass." }
+                        ],
+
+                    },
+
+                    /* ============================ ENGLISH ============================ */
+                    en: {
+                        s1_tag: "Project Scope & Strategy",
+                        s1_title: "DNS Digital <br>Infrastructure <span class='text-dns-soft'>Platform</span>",
+                        s1_desc: "The goal is not to digitise sales, but the infrastructure itself. A platform for intelligent access control and data sovereignty across the Smart Slopes.",
+
+
+                        sQ_title: "The Problem Today",
+                        sQ_lead: "Before talking about solutions, it is worth looking at where we start from.",
+                        sQ_points: [
+                            { icon: '<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>', t: "Everything on paper", d: "Printing, distribution, fragmented sales across outlets, manual reconciliation. Work that repeats every season across eight regions." },
+                            { icon: '<path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>', t: "We know what we sell, not who skis", d: "We know the tickets sold. We do not know how many people are actually on the tracks, when, or in which area. Network decisions rest on estimates." },
+                            { icon: '<path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>', t: "Control stops everyone and catches few", d: "Staff must stop every person to check a piece of paper. It is costly, slows the guest, creates friction — and still catches only a fraction." },
+                            { icon: '<path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>', t: "Flexible products impossible", d: "Half-day, non-consecutive multi-day, low-season rates: unmanageable on paper. The offer stays rigid because the instrument is rigid." }
+                        ],
+                        sQ_root: "There is one structural reason: <strong class='text-dns-soft'>the tracks cost money to groom every day, yet access is effectively impossible to control.</strong> This is not a DNS problem — it is the problem of all outdoor infrastructure without turnstiles.",
+
+                        s2_title: "Federated Architecture",
+                        s2_layers: [
+                            { icon: '<path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5"/>', title: "1. Commerce", owner: "LTS · Regions", desc: "Managed through LTS TIC-Web. Sales, collection and VAT stay with the regions. The technology partner never touches the payment flow." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', title: "2. Identity", owner: "Technology partner", desc: "Pseudonymised Digital Pass. A sharp split between identity — which stays with LTS and the regions — and the right of access." },
+                            { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', title: "3. Infrastructure", owner: "DNS · General Solutions", desc: "Geofencing and Infrastructure Session. The boundary geometry is generated from the regions' GPX data by General Solutions on the Contwise Maps platform and served through a GeoJSON interface. It stays outside the ticketing vendor's stack." },
+                            { icon: '<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2"/>', title: "4. Intelligence", owner: "DNS Sovereignty", desc: "Aggregated analytics and Destination Intelligence for network decisions based on real visitor-flow data." }
+                        ],
+
+                        s3_title: "Lifecycle / Session",
+                        s3_stepword: "Step",
+                        s3_steps: [
+                            { icon: '<path d="M3 3h18v18H3zM3 9h18"/>', label: "Purchase", detail: "Online purchase through LTS. Revenue stays with the regions; the system only receives the sales event." },
+                            { icon: '<path d="M12 2v20M2 12h20"/>', label: "Arrival", detail: "The guest arrives in the area with the pass already loaded in the app." },
+                            { icon: '<path d="M11 19l-7-7 7-7"/>', label: "Entry", detail: "Entry into the geofence is detected and prepares the session to open." },
+                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', label: "Session", detail: "The Infrastructure Session opens: it legally delimits the processing of location data." },
+                            { icon: '<path d="M13 5l7 7-7 7"/>', label: "Exit", detail: "On leaving the area the session closes automatically — privacy and battery life." },
+                            { icon: '<path d="M5 3v18l15-9z"/>', label: "End", detail: "Confirmed data is aggregated anonymously for network statistics." }
+                        ],
+
+
+                        sT_title: "The Pass and Freedom of Choice",
+                        sT_lead: "One code, and the guest chooses the carrier. Validation works in every case — only the method differs.",
+                        sT_carriers: [
+                            { icon: '<path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>', t: "DNS app", who: "Season and weekly passes", d: "For those who want the rest: automatic session start, validation without stopping, personal statistics and, later, services attached to the pass." },
+                            { icon: '<path d="M3 10h18M7 15h.01M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>', t: "Digital wallet", who: "Those who don't want the app", d: "The QR code in the phone wallet, like any other ticket. No app, no GPS, no tracking. The controller stops and scans." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', t: "Existing guest cards", who: "Visitors · later stage", d: "The pass travels on a carrier the guest already holds. Requires agreement with the card operator: a prospect, not a pilot item." }
+                        ],
+                        sT_freedom: "<strong class='text-dns-soft'>Nobody has to accept tracking in order to go skiing.</strong> GPS is what you receive in exchange for convenience — validation without stopping, statistics, services — not a condition of access. In both cases the controller performs the validation.",
+
+                        sO_title: "What It Opens Up",
+                        sO_lead: "Not a new project, but the next layer of E-DNS: same network, same partners, same map. On top of it we add access and data.",
+                        sO_chain: [
+                            { step: "Done", t: "E-DNS", d: "Shared map and communication across the eight regions." },
+                            { step: "Now", t: "Smart Slopes", d: "Digital access and real usage data on the same map." },
+                            { step: "Next", t: "Services", d: "Value for the guest and revenue for the regions on the same pass." }
+                        ],
+                        sO_groups: [
+                            { tag: "Immediate · near certain", t: "Inside the network", points: [
+                                "The end of paper: printing, distribution, reconciliation",
+                                "Real usage data per region: the FAIR model fed by measurement rather than estimates",
+                                "Faster, less confrontational control: only those who don't appear are stopped",
+                                "Safety: knowing in real time that someone is on the track"
+                            ]},
+                            { tag: "Plausible · this is where the money is", t: "Revenue for the regions", points: [
+                                "Products impossible on paper: half-day, multi-day, low season, first tracks",
+                                "Services attached to the pass: lockers, rental, ski school, hospitality",
+                                "Revenue stays with the region and the local partner; DNS provides the technical capability",
+                                "Summer extension where a service exists: maintained trails, not free-access footpaths"
+                            ]},
+                            { tag: "Strategic · to be built", t: "Return for DNS", points: [
+                                "DNS does not sell software and does not take revenue from tickets: it has neither the structure nor the role",
+                                "What DNS owns is the design of the system",
+                                "If the design is reused outside the network, DNS participates through a share or preferential terms",
+                                "Replicability is precisely what European programmes fund"
+                            ]}
+                        ],
+                        sO_bridge: "The potential economic benefit must be assessed using actual usage data, reliable benchmarks and operating-cost analysis. Future revenue is not guaranteed.",
+                        sO_note_label: "A necessary clarification",
+                        sO_note: "Further development stages will be decided only after the feasibility-test results and a separate economic review.",
+                        s4_title: "Operational Geofencing",
+                        s4_badge_on: "Session active",
+                        s4_badge_off: "No processing",
+                        s4_note: "The boundary geometry comes from General Solutions · Contwise Maps and never changes automatically",
+                        s4_points: [
+                            { icon: '<path d="M13 10V3L4 14h7v7l9-11h-7z"/>', t: "Automatic activation", d: "The session opens and closes on entering and leaving the perimeter. The guest does nothing." },
+                            { icon: '<path d="M12 8v4l3 3"/>', t: "Battery consumption", d: "The critical variable to measure: sampling must be optimised for cold weather and long days." },
+                            { icon: '<path d="M9 12l2 2 4-4"/>', t: "Legal basis", d: "The session delimits the legal perimeter for processing location data." },
+                            { icon: '<path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>', t: "Geometry from Contwise Maps", d: "Polygons are generated from the regions' GPX data by General Solutions on the Contwise Maps platform and served through an existing GeoJSON interface, together with real-time grooming status. They remain with DNS and the regions." }
+                        ],
+
+                        s5_title: "Controller-Assisted Validation",
+                        s5_lead: "The geofence is not an automatic turnstile: it establishes a presumption of presence. The official record is created when the controller confirms.",
+                        s5_device: "Controller view · active passes nearby",
+                        s5_features: [
+                            { icon: '<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>', t: "Presumption", d: "The system flags active passes in the area. That is an indication, not yet a validation." },
+                            { icon: '<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>', t: "Human confirmation", d: "The controller, standing at a natural chokepoint on the track, confirms in the app. Only then does the record become official." },
+                            { icon: '<path d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z"/>', t: "False positives don't matter", d: "Someone inside the area who isn't skiing is never confirmed: no wrongful charge, even with a wide geofence." },
+                            { icon: '<path d="M12 4v1m6 11h2M4 16H2m14.24-6.24l1.42-1.42M6.34 9.76L4.92 8.34"/>', t: "QR fallback", d: "Where there is no signal, or for guests who decline location, offline QR checking remains." },
+                            { icon: '<path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 9v1m0-9c-1.11 0-2.08.402-2.599 1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>', t: "Selling on the track", d: "If the controller finds someone without a pass, it is issued and paid for from the same phone — payment by link through the existing sales platform, with cash as the offline safety net. The on-the-spot price carries a supplement, set by the region." }
+                        ],
+
+                        s6_title: "Not an Experiment",
+                        s6_lead: "The individual building blocks are already in operation elsewhere. What is new is their combination, applied to infrastructure without turnstiles.",
+                        s6_proofs: [
+                            { icon: '<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>', t: "Digital pass", where: "Switzerland · since 2017/18", d: "Around 120 cross-country trail organisations use a digital pass validated by supervising staff." },
+                            { icon: '<path d="M5 12h14M12 5l7 7-7 7"/>', t: "Digital ticketing", where: "Trentino · since 2022", d: "A cross-country centre close to us uses digital ticketing, but with RFID hardware — the approach we have deliberately not chosen." },
+                            { icon: '<path d="M12 2a10 10 0 100 20 10 10 0 000-20zM2 12h20M12 2a15 15 0 010 20 15 15 0 010-20z"/>', t: "Geofence as trigger", where: "7 EU countries · over 10 years", d: "Satellite-based truck tolling charges at virtual gantries, with no roadside infrastructure at all." }
+                        ],
+                        s6_conclusion: "Alpine skiing solved paid access with <strong>turnstiles at the lifts</strong>. Everything without a physical chokepoint — cross-country, maintained trails, managed natural areas — has never had an answer. <strong class='text-dns-soft'>That is precisely where our approach sits.</strong>",
+
+
+                        s7_title: "Clearing & LTS",
+                        s7_api: "Unidirectional inbound synchronisation",
+                        s7_items: [
+                            { t: "Payment flow", d: "LTS acts as intermediary with the right of collection: it collects, retains 8% and settles to the regions by the 10th of the following month. DNS and the vendor never touch the money." },
+                            { t: "Data sovereignty", d: "A sharp split: LTS and the regions hold identity, the technology partner receives only a pseudonymous code (Digital Pass ID)." },
+                            { t: "Still to negotiate", d: "It is not yet clear whether access to the technical interfaces is included in the 6% commission. Irrelevant for the feasibility test, material at full scale." }
+                        ],
+
+                        s8_title: "Governance & Protection",
+                        s8_lead: "Conditions to settle before a single line of code is written — afterwards they become very hard to change.",
+                        s8_items: [
+                            { icon: '<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>', t: "IP ownership", d: "For development DNS commissions: ownership, or a perpetual, irrevocable, transferable and royalty-free licence surviving termination. The vendor's core platform remains entirely theirs. The Stage 0 offer already acknowledges this in writing: the architecture, the four-layer model and the pseudonymisation are expressly attributed to DNS." },
+                            { icon: '<path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>', t: "Data & portability", d: "DNS is the data owner, with a full export in an open, documented format on exit. On the mapping side this is already settled: with Contwise Maps the data rights remain entirely with the customer, who decides on licensing, sharing and channels." },
+                            { icon: '<path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>', t: "Store accounts", d: "App Store and Google Play accounts are held by DNS, with the vendor as delegated developer. The app stays ours." },
+                            { icon: '<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>', t: "Continuity", d: "Source-code escrow, change-of-control notice and price capping: mandatory for the production phase." }
+                        ],
+
+                        s9_title: "What the Test Must Prove",
+                        s9_lead: "The feasibility test exists to answer four questions — not to build a product.",
+                        s9_kpis: [
+                            { icon: '<path d="M5 13l4 4L19 7"/>', t: "Store approval", d: "Will the app be approved on iOS and Android with background location access? That is far from certain." },
+                            { icon: '<path d="M12 8v4l3 3"/>', t: "Battery", d: "Which GPS interval produces usable data without draining the battery on a winter day? This is the variable that decides everything." },
+                            { icon: '<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0"/>', t: "Geofence reliability", d: "Does detection work in real conditions: cold, tree cover, actual terrain." },
+                            { icon: '<path d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z"/>', t: "Unexpected constraints", d: "What limits show up on the ground that weren't visible at the design stage — the one thing no document can anticipate." }
+                        ],
+
+                        s10_title: "A Staged Path",
+                        s10_lead: "One decision at a time, each small and reversible. The season sets the rhythm: one stage per winter.",
+                        s10_loc: "Pilot region to be confirmed",
+                        s10_stages: [
+                            { when: "Winter 2026-27", t: "Stage 0 · Feasibility", d: "Kick-off in October 2026: a minimal build on a handful of devices through December, then app-store submission and field testing at Planica between December and January. No polished app, no real users. Result: a report with measured findings and a DNS workshop in February 2027." },
+                            { when: "Spring 2027", t: "Evaluation", d: "Analysis of results, an answer to the running-cost question and, if the picture holds, preparation of a European funding application." },
+                            { when: "Winter 2027-28", t: "Stage 1 · Beta", d: "Beta with real users: one region, one ticket type, around 50 testers. Only if Stage 0 succeeded." },
+                            { when: "From 2028", t: "Phase 2 · Production", d: "Multi-region rollout, bi-directional integration and additional services attached to the pass." }
+                        ],
+
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
